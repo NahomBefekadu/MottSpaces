@@ -227,12 +227,12 @@
   <!-- ── FILTER BAR ───────────────────────────── -->
   <div class="filter-bar">
     <span class="filter-label">Filter</span>
-    <button class="filter-btn active">All</button>
-    <button class="filter-btn">Furniture</button>
-    <button class="filter-btn">Ceramics</button>
-    <button class="filter-btn">Lighting</button>
-    <button class="filter-btn">Textiles</button>
-    <button class="filter-btn">Objects</button>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="furniture">Furniture</button>
+    <button class="filter-btn" data-filter="ceramics">Ceramics</button>
+    <button class="filter-btn" data-filter="lighting">Lighting</button>
+    <button class="filter-btn" data-filter="textiles">Textiles</button>
+    <button class="filter-btn" data-filter="objects">Objects</button>
   </div>
 
   <!-- ── FINDS ────────────────────────────────── -->
@@ -259,6 +259,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal"
         data-card="find"
+        data-category="furniture"
         data-lb-canvas="fi1"
         data-lb-title="Danish Teak Side Table"
         data-lb-meta="Value Village · Toronto">
@@ -276,6 +277,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
         data-card="find"
+        data-category="ceramics"
         data-lb-canvas="fi2"
         data-lb-title="Ceramic Vessel, Unsigned"
         data-lb-meta="Goodwill · Kensington">
@@ -293,6 +295,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
         data-card="find"
+        data-category="lighting"
         data-lb-canvas="fi3"
         data-lb-title="Brass Floor Lamp, 1960s"
         data-lb-meta="Salvation Army · Parkdale">
@@ -310,6 +313,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal"
         data-card="find"
+        data-category="furniture"
         data-lb-canvas="fi4"
         data-lb-title="Woven Rattan Chair"
         data-lb-meta="Flea Market · Leslieville">
@@ -327,6 +331,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
         data-card="find"
+        data-category="objects"
         data-lb-canvas="fi5"
         data-lb-title="Pyrex Casserole Set"
         data-lb-meta="Bins · Scarborough">
@@ -344,6 +349,7 @@
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
         data-card="find"
+        data-category="textiles"
         data-lb-canvas="fi6"
         data-lb-title="Linen Throw, Belgian"
         data-lb-meta="Estate Sale · Rosedale">
@@ -412,11 +418,20 @@
         ctx.globalAlpha=1; t++;
       })();
     })();
-    // Filter buttons (UI only for now)
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    // Filter buttons — live category filtering
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const findItems  = document.querySelectorAll('.find-item[data-category]');
+
+    filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        const cat = btn.dataset.filter;
+        findItems.forEach(item => {
+          const match = cat === 'all' || item.dataset.category === cat;
+          item.style.display = match ? '' : 'none';
+        });
       });
     });
   </script>
