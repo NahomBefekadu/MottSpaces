@@ -41,6 +41,7 @@ if (heroCanvas) {
   const ctx = heroCanvas.getContext('2d');
   let W, H;
   let chairTargets = []; // hoisted — must exist before resize() runs
+  let shapeIndex   = 0;  // hoisted — used by buildChairTargets
 
   function resize() {
     W = heroCanvas.width  = window.innerWidth;
@@ -156,9 +157,10 @@ if (heroCanvas) {
     shapeOttoman,
     shapeSofa,
   ];
-  let shapeIndex = 0;
+  // shapeIndex declared above at top of heroCanvas block
 
   function buildChairTargets() {
+    if (typeof SHAPES === 'undefined' || !SHAPES.length) return; // guard: called before SHAPES is ready
     const scale = Math.min(W, H) / 280;
     const cx = W * 0.65;
     const cy = H * 0.72;
@@ -258,6 +260,7 @@ if (heroCanvas) {
   // Build pool — extra particles for chair density
   const particles = [];
   for (let i = 0; i < 320; i++) particles.push(new Particle(i));
+  buildChairTargets(); // safe to call now — SHAPES is defined
 
   // Assign targets from chairTargets array to a subset of particles
   function assignTargets() {
