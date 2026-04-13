@@ -34,15 +34,15 @@
       width: 100%; height: 100%;
     }
     .page-hero-content { position: relative; z-index: 2; }
-    .page-hero .back-link {
-      position: absolute; top: 2rem; left: var(--gutter);
-      z-index: 3;
-      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
-      color: rgba(245,240,232,0.5); text-decoration: none;
-      display: flex; align-items: center; gap: 0.5rem;
+    .nav-back {
+      font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--mid-gray); text-decoration: none;
+      display: flex; align-items: center; gap: 0.45rem;
       transition: color 0.3s;
+      white-space: nowrap;
     }
-    .page-hero .back-link:hover { color: var(--mustard); }
+    .nav-back:hover { color: var(--terracotta); }
+    .nav-back svg { flex-shrink: 0; }
     .page-hero .eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mustard); margin-bottom: 1rem; display: block; }
     .page-hero h1 { font-family: var(--serif); font-size: clamp(3rem,7vw,5.5rem); font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 1.2rem; }
     .page-hero h1 em { font-style: italic; color: var(--terracotta); }
@@ -200,6 +200,10 @@
 
   <!-- ── NAV ─────────────────────────────────── -->
   <nav>
+    <a href="../index.html" class="nav-back">
+      <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M11 5H1M5 1L1 5l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </a>
     <a href="/" class="nav-logo">Mott<span>.</span>Spaces</a>
     <ul class="nav-links">
       <li><a href="index.html" style="color:var(--terracotta)">Thrift</a></li>
@@ -212,7 +216,7 @@
   <!-- ── PAGE HERO ────────────────────────────── -->
   <div class="page-hero">
     <canvas id="thrift-hero-canvas" aria-hidden="true"></canvas>
-    <a href="../index.html" class="back-link">← Back home</a>
+
     <div class="page-hero-content">
       <span class="eyebrow reveal">Secondhand Scores</span>
       <h1 class="reveal reveal-delay-1">Thrift<br><em>Finds</em></h1>
@@ -253,8 +257,11 @@
     <!-- Masonry grid -->
     <div class="finds-grid">
 
-      <a href="#" class="find-item reveal">
-        <div class="find-item-img" style="aspect-ratio:3/4"><canvas id="fi1" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal"
+        data-lb-canvas="fi1"
+        data-lb-title="Danish Teak Side Table"
+        data-lb-meta="Value Village · Toronto">
+        <div class="find-item-img" style="aspect-ratio:3/4"><!-- fi1 --><canvas id="fi1" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Danish Teak Side Table</span>
@@ -266,8 +273,11 @@
         </div>
       </a>
 
-      <a href="#" class="find-item reveal reveal-delay-1">
-        <div class="find-item-img" style="aspect-ratio:1/1"><canvas id="fi2" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
+        data-lb-canvas="fi2"
+        data-lb-title="Ceramic Vessel, Unsigned"
+        data-lb-meta="Goodwill · Kensington">
+        <div class="find-item-img" style="aspect-ratio:1/1"><!-- fi2 --><canvas id="fi2" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Ceramic Vessel, Unsigned</span>
@@ -279,8 +289,11 @@
         </div>
       </a>
 
-      <a href="#" class="find-item reveal reveal-delay-2">
-        <div class="find-item-img" style="aspect-ratio:4/3"><canvas id="fi3" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
+        data-lb-canvas="fi3"
+        data-lb-title="Brass Floor Lamp, 1960s"
+        data-lb-meta="Salvation Army · Parkdale">
+        <div class="find-item-img" style="aspect-ratio:4/3"><!-- fi3 --><canvas id="fi3" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Brass Floor Lamp, 1960s</span>
@@ -292,8 +305,11 @@
         </div>
       </a>
 
-      <a href="#" class="find-item reveal">
-        <div class="find-item-img" style="aspect-ratio:3/4"><canvas id="fi4" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal"
+        data-lb-canvas="fi4"
+        data-lb-title="Woven Rattan Chair"
+        data-lb-meta="Flea Market · Leslieville">
+        <div class="find-item-img" style="aspect-ratio:3/4"><!-- fi4 --><canvas id="fi4" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Woven Rattan Chair</span>
@@ -305,8 +321,11 @@
         </div>
       </a>
 
-      <a href="#" class="find-item reveal reveal-delay-1">
-        <div class="find-item-img" style="aspect-ratio:4/3"><canvas id="fi5" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
+        data-lb-canvas="fi5"
+        data-lb-title="Pyrex Casserole Set"
+        data-lb-meta="Bins · Scarborough">
+        <div class="find-item-img" style="aspect-ratio:4/3"><!-- fi5 --><canvas id="fi5" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Pyrex Casserole Set</span>
@@ -318,8 +337,11 @@
         </div>
       </a>
 
-      <a href="#" class="find-item reveal reveal-delay-2">
-        <div class="find-item-img" style="aspect-ratio:1/1"><canvas id="fi6" style="height:100%;position:absolute;inset:0"></canvas></div>
+      <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
+        data-lb-canvas="fi6"
+        data-lb-title="Linen Throw, Belgian"
+        data-lb-meta="Estate Sale · Rosedale">
+        <div class="find-item-img" style="aspect-ratio:1/1"><!-- fi6 --><canvas id="fi6" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Linen Throw, Belgian</span>
@@ -346,6 +368,7 @@
   </footer>
 
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/lightbox.js"></script>
   <script>
     // Mini particle canvas for page hero
     (function() {

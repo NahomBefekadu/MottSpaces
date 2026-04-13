@@ -28,13 +28,15 @@
     }
     #art-hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
     .page-hero-content { position: relative; z-index: 2; }
-    .page-hero .back-link {
-      position: absolute; top: 2rem; left: var(--gutter); z-index: 3;
-      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    .nav-back {
+      font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
       color: var(--mid-gray); text-decoration: none;
-      display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s;
+      display: flex; align-items: center; gap: 0.45rem;
+      transition: color 0.3s;
+      white-space: nowrap;
     }
-    .page-hero .back-link:hover { color: var(--terracotta); }
+    .nav-back:hover { color: var(--terracotta); }
+    .nav-back svg { flex-shrink: 0; }
     .page-hero .eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 1rem; display: block; }
     .page-hero h1 { font-family: var(--serif); font-size: clamp(3rem,7vw,5.5rem); font-weight: 300; color: var(--charcoal); line-height: 1; margin-bottom: 1.2rem; }
     .page-hero h1 em { font-style: italic; color: var(--terracotta); }
@@ -132,6 +134,10 @@
 
   <!-- ── NAV ─────────────────────────────────── -->
   <nav>
+    <a href="../index.html" class="nav-back">
+      <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M11 5H1M5 1L1 5l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </a>
     <a href="/" class="nav-logo">Mott<span>.</span>Spaces</a>
     <ul class="nav-links">
       <li><a href="../thrift/index.html">Thrift</a></li>
@@ -144,7 +150,7 @@
   <!-- ── PAGE HERO ────────────────────────────── -->
   <div class="page-hero">
     <canvas id="art-hero-canvas" aria-hidden="true"></canvas>
-    <a href="../index.html" class="back-link">← Back home</a>
+
     <div class="page-hero-content">
       <span class="eyebrow reveal">Collection</span>
       <h1 class="reveal reveal-delay-1">Art &amp;<br><em>Objects</em></h1>
@@ -159,9 +165,12 @@
 
     <div class="gallery-wall">
 
-      <div class="art-card reveal">
+      <div class="art-card lightbox-trigger reveal"
+        data-lb-canvas="ac1"
+        data-lb-title="Untitled Figure Study"
+        data-lb-meta="Oil on canvas · Estate Sale 2024">
         <span class="art-tag">Oil on canvas</span>
-        <canvas id="ac1"></canvas>
+        <!-- ac1 --><canvas id="ac1"></canvas>
         <div class="art-caption">
           <h4>Untitled Figure Study</h4>
           <span class="art-meta">Found · Estate Sale 2024</span>
@@ -169,9 +178,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-1">
+      <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-lb-canvas="ac2"
+        data-lb-title="Stoneware Vessel"
+        data-lb-meta="Ceramic · Flea Market 2025">
         <span class="art-tag">Ceramic</span>
-        <canvas id="ac2"></canvas>
+        <!-- ac2 --><canvas id="ac2"></canvas>
         <div class="art-caption">
           <h4>Stoneware Vessel</h4>
           <span class="art-meta">Bought · Flea Market 2025</span>
@@ -179,9 +191,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-2">
+      <div class="art-card lightbox-trigger reveal reveal-delay-2"
+        data-lb-canvas="ac3"
+        data-lb-title="Lithograph, Abstract"
+        data-lb-meta="Print · Bins 2023">
         <span class="art-tag">Print</span>
-        <canvas id="ac3"></canvas>
+        <!-- ac3 --><canvas id="ac3"></canvas>
         <div class="art-caption">
           <h4>Lithograph, Abstract</h4>
           <span class="art-meta">Found · Bins 2023</span>
@@ -189,9 +204,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-1">
+      <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-lb-canvas="ac4"
+        data-lb-title="Architectural Study, Rome"
+        data-lb-meta="Photography · Gift 2022">
         <span class="art-tag">Photography</span>
-        <canvas id="ac4"></canvas>
+        <!-- ac4 --><canvas id="ac4"></canvas>
         <div class="art-caption">
           <h4>Architectural Study, Rome</h4>
           <span class="art-meta">Gift · 2022</span>
@@ -199,9 +217,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-2">
+      <div class="art-card lightbox-trigger reveal reveal-delay-2"
+        data-lb-canvas="ac5"
+        data-lb-title="Hand-Woven Wall Piece"
+        data-lb-meta="Textile · Maker's Market 2025">
         <span class="art-tag">Textile</span>
-        <canvas id="ac5"></canvas>
+        <!-- ac5 --><canvas id="ac5"></canvas>
         <div class="art-caption">
           <h4>Hand-Woven Wall Piece</h4>
           <span class="art-meta">Bought · Maker's Market 2025</span>
@@ -209,9 +230,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-3">
+      <div class="art-card lightbox-trigger reveal reveal-delay-3"
+        data-lb-canvas="ac6"
+        data-lb-title="Landscape Fragment"
+        data-lb-meta="Oil on board · Value Village 2024">
         <span class="art-tag">Oil on board</span>
-        <canvas id="ac6"></canvas>
+        <!-- ac6 --><canvas id="ac6"></canvas>
         <div class="art-caption">
           <h4>Landscape Fragment</h4>
           <span class="art-meta">Found · Value Village 2024</span>
@@ -219,9 +243,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal">
+      <div class="art-card lightbox-trigger reveal"
+        data-lb-canvas="ac7"
+        data-lb-title="Cast Iron Form"
+        data-lb-meta="Sculpture · Industrial Auction 2023">
         <span class="art-tag">Sculpture</span>
-        <canvas id="ac7"></canvas>
+        <!-- ac7 --><canvas id="ac7"></canvas>
         <div class="art-caption">
           <h4>Cast Iron Form</h4>
           <span class="art-meta">Found · Industrial Auction 2023</span>
@@ -229,9 +256,12 @@
         </div>
       </div>
 
-      <div class="art-card reveal reveal-delay-1">
+      <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-lb-canvas="ac8"
+        data-lb-title="Interior, Morning Light"
+        data-lb-meta="Watercolour · Artist Studio 2026">
         <span class="art-tag">Watercolour</span>
-        <canvas id="ac8"></canvas>
+        <!-- ac8 --><canvas id="ac8"></canvas>
         <div class="art-caption">
           <h4>Interior, Morning Light</h4>
           <span class="art-meta">Bought · Artist Studio 2026</span>
@@ -275,6 +305,7 @@
   </footer>
 
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/lightbox.js"></script>
   <script>
     // Art hero canvas — warm organic flow field
     (function() {
