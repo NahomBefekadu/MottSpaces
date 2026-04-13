@@ -258,7 +258,7 @@ if (heroCanvas) {
 
   // Build pool — extra particles for chair density
   const particles = [];
-  for (let i = 0; i < 320; i++) particles.push(new Particle(i));
+  for (let i = 0; i < 180; i++) particles.push(new Particle(i)); // reduced: 320→180
   buildChairTargets(); // safe to call now — SHAPES is defined
 
   // Assign targets from chairTargets array to a subset of particles
@@ -298,19 +298,22 @@ if (heroCanvas) {
     }
   }
 
-  // ── Connection lines ──
+  // ── Connection lines — only during 'hold', sampled subset only ──
   function drawConnections(state) {
-    const DIST = state === 'hold' ? 28 : 90;
-    const alpha = state === 'hold' ? 0.18 : 0.07;
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
+    if (state !== 'hold') return; // skip entirely during wander = huge saving
+    const DIST  = 32;
+    const alpha = 0.15;
+    // Only check every other particle to halve iterations
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < particles.length; i += 2) {
+      for (let j = i + 1; j < particles.length; j += 2) {
         const dx = particles[i].x - particles[j].x;
         const dy = particles[i].y - particles[j].y;
-        const d  = Math.sqrt(dx*dx + dy*dy);
+        if (Math.abs(dx) > DIST || Math.abs(dy) > DIST) continue; // cheap bbox reject
+        const d = Math.sqrt(dx*dx + dy*dy);
         if (d < DIST) {
           ctx.globalAlpha = (1 - d / DIST) * alpha;
-          ctx.strokeStyle = '#C4622D';
-          ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
@@ -339,6 +342,7 @@ if (heroCanvas) {
 
   function heroLoop() {
     requestAnimationFrame(heroLoop);
+    if (!tabVisible) return; // pause when tab hidden
     ctx.clearRect(0, 0, W, H);
 
     // Background gradient
@@ -422,11 +426,11 @@ if (aboutCanvas) {
   }
 
   // Cloth config
-  const COLS = 28, ROWS = 26;
+  const COLS = 22, ROWS = 20; // reduced from 28x26 — fewer constraints, same visual
   const GRAVITY = 0.42;
   const STIFFNESS = 3;
   const TEAR_DIST = 55;
-  let points = [], constraints = [];
+  let points = [], constraints = [], constraintMap = new Map();
   let mouse = { x:0, y:0, down:false, px:0, py:0 };
 
   function initCloth() {
@@ -434,7 +438,7 @@ if (aboutCanvas) {
     const spacingX = W / (COLS - 1);
     const spacingY = (H * 0.97) / (ROWS - 1);
     const startY   = 14;
-    points = []; constraints = [];
+    points = []; constraints = []; constraintMap = new Map();
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const x = c * spacingX;
@@ -445,8 +449,8 @@ if (aboutCanvas) {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const i = r * COLS + c;
-        if (c < COLS-1) constraints.push({ a:i, b:i+1,      len:spacingX, active:true });
-        if (r < ROWS-1) constraints.push({ a:i, b:i+COLS,   len:spacingY, active:true });
+        if (c < COLS-1) { const cn = { a:i, b:i+1,    len:spacingX, active:true }; constraints.push(cn); constraintMap.set(`${i}-${i+1}`, cn); }
+        if (r < ROWS-1) { const cn = { a:i, b:i+COLS, len:spacingY, active:true }; constraints.push(cn); constraintMap.set(`${i}-${i+COLS}`, cn); }
       }
     }
   }
@@ -623,10 +627,10 @@ if (aboutCanvas) {
       for (let c = 0; c < COLS-1; c++) {
         const tl = points[r*COLS+c],     tr = points[r*COLS+c+1];
         const bl = points[(r+1)*COLS+c], br = points[(r+1)*COLS+c+1];
-        const h1 = constraints.find(cn=>cn.a===r*COLS+c    &&cn.b===r*COLS+c+1    &&cn.active);
-        const h2 = constraints.find(cn=>cn.a===(r+1)*COLS+c&&cn.b===(r+1)*COLS+c+1&&cn.active);
-        const v1 = constraints.find(cn=>cn.a===r*COLS+c    &&cn.b===(r+1)*COLS+c  &&cn.active);
-        const v2 = constraints.find(cn=>cn.a===r*COLS+c+1  &&cn.b===(r+1)*COLS+c+1&&cn.active);
+        const h1 = constraintMap.get(`${r*COLS+c}-${r*COLS+c+1}`);
+        const h2 = constraintMap.get(`${(r+1)*COLS+c}-${(r+1)*COLS+c+1}`);
+        const v1 = constraintMap.get(`${r*COLS+c}-${(r+1)*COLS+c}`);
+        const v2 = constraintMap.get(`${r*COLS+c+1}-${(r+1)*COLS+c+1}`);
 
         if (h1&&h2&&v1&&v2) {
           ctx.save();
@@ -717,6 +721,7 @@ if (aboutCanvas) {
   let t2 = 0;
   function aboutLoop() {
     requestAnimationFrame(aboutLoop);
+    if (typeof tabVisible !== 'undefined' && !tabVisible) return; // pause when tab hidden
     const W = aboutCanvas.width, H = aboutCanvas.height;
     updateCloth();
 
@@ -819,6 +824,11 @@ window.addEventListener('load', () => {
 });
 
 // ── 6. REVEAL ON SCROLL ─────────────────────
+// Pause all animation loops when tab is hidden
+let tabVisible = true;
+document.addEventListener('visibilitychange', () => {
+  tabVisible = !document.hidden;
+});
 const reveals = document.querySelectorAll('.reveal');
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
