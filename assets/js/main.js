@@ -400,13 +400,10 @@ function updateCloth() {
 }
 
 // Images
-// Resolve image paths relative to the JS file location, works from any subpage
-const _jsBase = document.querySelector('script[src*="main.js"]')?.src
-  ? new URL(document.querySelector('script[src*="main.js"]').src).href.replace(/\/[^\/]+$/, '/')
-  : document.location.origin + '/';
-const _imgBase = _jsBase.replace('/assets/js/', '/assets/images/');
-const revealImg = new Image(); revealImg.src = _imgBase + 'chair-placeholder.jpg';
-const clothImg  = new Image(); clothImg.src  = _imgBase + 'cloth-painting.jpg';
+// Absolute paths from site root — works from any subpage depth
+const _siteRoot = document.location.origin + '/MottSpaces';
+const revealImg = new Image(); revealImg.src = _siteRoot + '/assets/images/chair-placeholder.jpg';
+const clothImg  = new Image(); clothImg.src  = _siteRoot + '/assets/images/cloth-painting.jpg';
 const clothSampler = document.createElement('canvas');
 let clothSamplerReady = false;
 
