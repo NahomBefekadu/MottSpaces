@@ -25,7 +25,7 @@
     /* ── Sections nav cards ── */
     .sections-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
       margin-top: 3.5rem;
     }
@@ -124,7 +124,6 @@
     <ul class="nav-links">
       <li><a href="thrift/index.html">Thrift</a></li>
       <li><a href="art/index.html">Art</a></li>
-      <li><a href="#journal">Journal</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
@@ -161,7 +160,6 @@
       <span>Slow Living</span><span class="dot">·</span>
       <span>Secondhand Finds</span><span class="dot">·</span>
       <span>Considered Spaces</span><span class="dot">·</span>
-      <span>Material Craft</span><span class="dot">·</span>
     </div>
   </div>
 
@@ -197,58 +195,9 @@
         </div>
       </a>
 
-      <!-- Journal -->
-      <a href="#journal" class="section-card reveal reveal-delay-2">
-        <div class="section-card-canvas">
-          <canvas id="sc3"></canvas>
-        </div>
-        <div class="section-card-body">
-          <span class="eyebrow">Writing</span>
-          <h3>The <em>Journal</em></h3>
-          <p>Field notes on thrifting, interiors, and what makes a space feel like somewhere worth being.</p>
-          <span class="arrow">Read the journal →</span>
-        </div>
-      </a>
     </div>
   </section>
 
-  <!-- ── JOURNAL PREVIEW ───────────────────────── -->
-  <section id="journal" style="background: var(--warm-white);">
-    <span class="section-label reveal">Latest Writing</span>
-    <h2 class="section-title reveal reveal-delay-1">From the <em>Journal</em></h2>
-
-    <div class="journal-grid">
-      <a href="journal/post-1.html" class="journal-card reveal">
-        <div class="journal-card-img"><canvas id="jc1"></canvas></div>
-        <div class="journal-card-meta">
-          <span class="tag">Thrift</span>
-          <span>Apr 10, 2026</span>
-        </div>
-        <h3>How to Spot Real Teak in 30 Seconds</h3>
-        <p>Grain, weight, the smell test — what to look for before you pick it up.</p>
-      </a>
-
-      <a href="journal/post-2.html" class="journal-card reveal reveal-delay-1">
-        <div class="journal-card-img"><canvas id="jc2"></canvas></div>
-        <div class="journal-card-meta">
-          <span class="tag">Interiors</span>
-          <span>Mar 28, 2026</span>
-        </div>
-        <h3>The Return of Terracotta: Beyond the Trend</h3>
-        <p>Earth tones were never a trend — they were always just forgotten.</p>
-      </a>
-
-      <a href="journal/post-3.html" class="journal-card reveal reveal-delay-2">
-        <div class="journal-card-img"><canvas id="jc3"></canvas></div>
-        <div class="journal-card-meta">
-          <span class="tag">Art</span>
-          <span>Mar 14, 2026</span>
-        </div>
-        <h3>Eames, Knoll, and the Chair as Philosophy</h3>
-        <p>What a piece of furniture from 1956 still teaches us about thinking through making.</p>
-      </a>
-    </div>
-  </section>
 
   <!-- ── ABOUT ─────────────────────────────────── -->
   <section id="about">
@@ -296,7 +245,6 @@
     <ul class="footer-links">
       <li><a href="thrift/index.html">Thrift</a></li>
       <li><a href="art/index.html">Art</a></li>
-      <li><a href="#journal">Journal</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
@@ -337,12 +285,6 @@
     window.addEventListener('load', () => {
       drawCard('sc1', ['#5C3D2E','#D4A843','#F5F0E8'], 'diagonal'); // thrift
       drawCard('sc2', ['#2C2C2C','#C4622D','#D4A843'], 'circle');   // art
-      drawCard('sc3', ['#7A8C6E','#F5F0E8','#C4622D'], 'block');    // journal
-      if (typeof makePaletteCanvas === 'function') {
-        makePaletteCanvas(document.getElementById('jc1'), ['#C4622D','#D4A843','#F5F0E8','#7A8C6E','#5C3D2E'], 'stripes');
-        makePaletteCanvas(document.getElementById('jc2'), ['#2C2C2C','#C4622D','#D4A843','#F5F0E8'], 'circles');
-        makePaletteCanvas(document.getElementById('jc3'), ['#C4622D','#F5F0E8','#D4A843','#7A8C6E'], 'mesh');
-      }
     });
   </script>
 </body>
