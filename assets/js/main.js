@@ -52,65 +52,118 @@ if (heroCanvas) {
 
   const PALETTE = ['#C4622D','#D4A843','#7A8C6E','#5C3D2E','#8A8A8A'];
 
-  // ── Chair silhouette target points ──
-  // Sampled from a tulip/shell chair outline
-  // Returns array of {x,y} normalised 0-1, scaled to canvas at runtime
-  function getChairShape(cx, cy, scale) {
-    const pts = [];
-    function p(x, y) { pts.push({ x: cx + x * scale, y: cy + y * scale }); }
+  // ── MCM Furniture silhouette library ──
+  // Each function returns [{x,y}] points centered on (cx,cy) at given scale
 
-    // Base disc
-    for (let a = 0; a < Math.PI * 2; a += 0.28)
-      p(Math.cos(a) * 48, Math.sin(a) * 9);
-
-    // Pedestal column (sample points along bezier)
-    for (let i = 0; i <= 12; i++) {
-      const t = i / 12;
-      const bx = 0 * (1-t)**2 + 0 * 2*t*(1-t) + 0 * t**2;
-      const by = -8 * (1-t)**2 + -55 * 2*t*(1-t) + -108 * t**2;
-      p(bx, by);
-    }
-
-    // Seat bowl ellipse
-    for (let a = 0; a < Math.PI * 2; a += 0.22)
-      p(Math.cos(a) * 62, -122 + Math.sin(a) * 24);
-
-    // Inner seat
-    for (let a = 0; a < Math.PI * 2; a += 0.35)
-      p(Math.cos(a) * 42, -126 + Math.sin(a) * 14);
-
-    // Back shell left curve
-    for (let i = 0; i <= 14; i++) {
-      const t = i / 14;
-      // cubic bezier: (-60,-116) -> (-72,-155) -> (-52,-228) -> (0,-240)
-      const bx = (-60)*(1-t)**3 + (-72)*3*t*(1-t)**2 + (-52)*3*t**2*(1-t) + (0)*t**3;
-      const by = (-116)*(1-t)**3 + (-155)*3*t*(1-t)**2 + (-228)*3*t**2*(1-t) + (-240)*t**3;
-      p(bx, by);
-    }
-    // Back shell right curve
-    for (let i = 0; i <= 14; i++) {
-      const t = i / 14;
-      const bx = (60)*(1-t)**3 + (72)*3*t*(1-t)**2 + (52)*3*t**2*(1-t) + (0)*t**3;
-      const by = (-116)*(1-t)**3 + (-155)*3*t*(1-t)**2 + (-228)*3*t**2*(1-t) + (-240)*t**3;
-      p(bx, by);
-    }
-
-    // Inner back highlight
-    for (let i = 0; i <= 10; i++) {
-      const t = i / 10;
-      const bx = (-38)*(1-t)**3 + (-46)*3*t*(1-t)**2 + (-30)*3*t**2*(1-t) + (0)*t**3;
-      const by = (-120)*(1-t)**3 + (-162)*3*t*(1-t)**2 + (-220)*3*t**2*(1-t) + (-232)*t**3;
-      p(bx, by);
-    }
-
-    return pts;
+  // 1. Tulip / shell chair (original)
+  function shapeTulipChair(cx, cy, sc) {
+    const p = [], add = (x,y) => p.push({x:cx+x*sc, y:cy+y*sc});
+    for (let a=0;a<Math.PI*2;a+=0.3)  add(Math.cos(a)*48, Math.sin(a)*9);          // base disc
+    for (let i=0;i<=12;i++) { const t=i/12; add(0, -8+(-100)*t); }                  // column
+    for (let a=0;a<Math.PI*2;a+=0.22) add(Math.cos(a)*62, -122+Math.sin(a)*24);    // seat
+    for (let i=0;i<=14;i++) { const t=i/14;                                          // back left
+      add((-60)*(1-t)**3+(-72)*3*t*(1-t)**2+(-52)*3*t**2*(1-t),
+          (-116)*(1-t)**3+(-155)*3*t*(1-t)**2+(-228)*3*t**2*(1-t)+(-240)*t**3); }
+    for (let i=0;i<=14;i++) { const t=i/14;                                          // back right
+      add((60)*(1-t)**3+(72)*3*t*(1-t)**2+(52)*3*t**2*(1-t),
+          (-116)*(1-t)**3+(-155)*3*t*(1-t)**2+(-228)*3*t**2*(1-t)+(-240)*t**3); }
+    return p;
   }
 
+  // 2. Ladder-back chair (from image: bottom row 4th)
+  // Tapered legs, seat, rungs up the back
+  function shapeLadderChair(cx, cy, sc) {
+    const p = [], add = (x,y) => p.push({x:cx+x*sc, y:cy+y*sc});
+    // Seat (flat rectangle)
+    for (let x=-55;x<=55;x+=8)  { add(x, -110); add(x, -130); }
+    for (let y=-130;y<=-110;y+=4) { add(-55,y); add(55,y); }
+    // 4 tapered legs (splayed outward — signature MCM)
+    const legs = [[-50,-110,-62,0],[-30,-110,-22,0],[30,-110,22,0],[50,-110,62,0]];
+    legs.forEach(([x1,y1,x2,y2]) => {
+      for (let i=0;i<=10;i++) { const t=i/10; add(x1+(x2-x1)*t, y1+(y2-y1)*t); }
+    });
+    // Ladder back — 2 uprights + 4 rungs
+    for (let y=-130;y>=-260;y-=8) { add(-42,y); add(42,y); }  // uprights
+    [-150,-175,-200,-225].forEach(y => {
+      for (let x=-42;x<=42;x+=7) add(x,y);                    // rungs
+    });
+    return p;
+  }
+
+  // 3. Round pedestal table (top row 3rd — tripod splay legs)
+  function shapePedestalTable(cx, cy, sc) {
+    const p = [], add = (x,y) => p.push({x:cx+x*sc, y:cy+y*sc});
+    // Tabletop — big ellipse
+    for (let a=0;a<Math.PI*2;a+=0.15) add(Math.cos(a)*90, -120+Math.sin(a)*14);
+    // Inner ring
+    for (let a=0;a<Math.PI*2;a+=0.22) add(Math.cos(a)*70, -120+Math.sin(a)*10);
+    // Central column
+    for (let i=0;i<=10;i++) add(0, -120 + i*12);
+    // 3 splayed legs (tripod)
+    [0, 2.09, 4.19].forEach(angle => {
+      const ex = Math.cos(angle)*72, ey = Math.sin(angle)*18;
+      for (let i=0;i<=10;i++) {
+        const t=i/10; add(ex*t, ey*t);
+      }
+    });
+    return p;
+  }
+
+  // 4. Tufted ottoman (middle row 4th — fat square, 4 tiny splayed legs)
+  function shapeOttoman(cx, cy, sc) {
+    const p = [], add = (x,y) => p.push({x:cx+x*sc, y:cy+y*sc});
+    // Body — rounded square
+    for (let x=-70;x<=70;x+=6)  { add(x,-90); add(x,-160); }
+    for (let y=-160;y<=-90;y+=6) { add(-70,y); add(70,y);  }
+    // Button tufts (3x2 grid)
+    [-35,0,35].forEach(x => [-115,-135].forEach(y => {
+      for (let a=0;a<Math.PI*2;a+=0.5) add(x+Math.cos(a)*6, y+Math.sin(a)*4);
+    }));
+    // 4 short splayed legs
+    [[-60,-90,-72,-50],[-40,-90,-30,-50],[40,-90,30,-50],[60,-90,72,-50]].forEach(([x1,y1,x2,y2]) => {
+      for (let i=0;i<=6;i++) { const t=i/6; add(x1+(x2-x1)*t, y1+(y2-y1)*t); }
+    });
+    return p;
+  }
+
+  // 5. Low MCM sofa (bottom row last — wide, boxy, tapered legs)
+  function shapeSofa(cx, cy, sc) {
+    const p = [], add = (x,y) => p.push({x:cx+x*sc, y:cy+y*sc});
+    // Seat base
+    for (let x=-110;x<=110;x+=6) { add(x,-90); add(x,-130); }
+    for (let y=-130;y<=-90;y+=5) { add(-110,y); add(110,y); }
+    // Back cushion
+    for (let x=-105;x<=105;x+=6) { add(x,-130); add(x,-190); }
+    for (let y=-190;y<=-130;y+=6) { add(-105,y); add(105,y); }
+    // Arm left
+    for (let x=-110;x>=-125;x-=4) for (let y=-90;y>=-175;y+=8) add(x,y);
+    // Arm right
+    for (let x=110;x<=125;x+=4) for (let y=-90;y>=-175;y+=8) add(x,y);
+    // 6 tapered legs
+    [-90,-30,30,-90,-30,30].forEach((x,i) => {
+      const flip = i < 3 ? -1 : 1;
+      const bx = x, ex = x + flip*8;
+      for (let j=0;j<=6;j++) { const t=j/6; add(bx+(ex-bx)*t, -90+(-90)*(-t)); }
+    });
+    return p;
+  }
+
+  // Shape roster — cycles in order
+  const SHAPES = [
+    shapeTulipChair,
+    shapeLadderChair,
+    shapePedestalTable,
+    shapeOttoman,
+    shapeSofa,
+  ];
+  let shapeIndex = 0;
+
   function buildChairTargets() {
-    const scale = Math.min(W, H) / 260;
-    const cx = W * 0.65;  // right-of-centre so it doesn't cover title
+    const scale = Math.min(W, H) / 280;
+    const cx = W * 0.65;
     const cy = H * 0.72;
-    chairTargets = getChairShape(cx, cy, scale);
+    const fn = SHAPES[shapeIndex % SHAPES.length];
+    chairTargets = fn(cx, cy, scale);
   }
 
   // ── Formation state machine ──
@@ -265,37 +318,17 @@ if (heroCanvas) {
     }
   }
 
-  // ── Ghost chair outline drawn at hold peak ──
+  // ── Ghost outline — draws current chairTargets as faint dots ──
   function drawGhostChair(alpha) {
-    if (alpha <= 0) return;
-    const scale = Math.min(W, H) / 260;
-    const cx = W * 0.65, cy = H * 0.72;
-    function pt(x, y) { return [cx + x*scale, cy + y*scale]; }
+    if (alpha <= 0 || !chairTargets.length) return;
     ctx.save();
-    ctx.globalAlpha = alpha * 0.22;
-    ctx.strokeStyle = '#C4622D';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    // Base
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 48*scale, 9*scale, 0, 0, Math.PI*2);
-    ctx.stroke();
-    // Column
-    ctx.beginPath();
-    ctx.moveTo(...pt(0,-5));
-    ctx.bezierCurveTo(...pt(-4,-55), ...pt(-6,-95), ...pt(0,-108));
-    ctx.stroke();
-    // Seat
-    ctx.beginPath();
-    ctx.ellipse(cx, cy-122*scale, 62*scale, 24*scale, -0.08, 0, Math.PI*2);
-    ctx.stroke();
-    // Back
-    ctx.beginPath();
-    ctx.moveTo(...pt(-60,-116));
-    ctx.bezierCurveTo(...pt(-72,-155), ...pt(-52,-228), ...pt(0,-240));
-    ctx.bezierCurveTo(...pt(52,-228), ...pt(72,-155), ...pt(60,-116));
-    ctx.stroke();
+    ctx.globalAlpha = alpha * 0.18;
+    ctx.fillStyle = '#C4622D';
+    chairTargets.forEach(pt => {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
     ctx.restore();
   }
 
@@ -324,6 +357,7 @@ if (heroCanvas) {
     if (formState === 'wander' && formTimer <= 0) {
       formState = 'forming';
       formTimer = FORM_DUR;
+      shapeIndex++; // advance to next shape in roster
       assignTargets();
     } else if (formState === 'forming') {
       progress = 1 - formTimer / FORM_DUR;
