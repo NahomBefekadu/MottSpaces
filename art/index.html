@@ -166,6 +166,7 @@
     <div class="gallery-wall">
 
       <div class="art-card lightbox-trigger reveal"
+        data-card="art"
         data-lb-canvas="ac1"
         data-lb-title="Untitled Figure Study"
         data-lb-meta="Oil on canvas · Estate Sale 2024">
@@ -179,6 +180,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-card="art"
         data-lb-canvas="ac2"
         data-lb-title="Stoneware Vessel"
         data-lb-meta="Ceramic · Flea Market 2025">
@@ -192,6 +194,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-2"
+        data-card="art"
         data-lb-canvas="ac3"
         data-lb-title="Lithograph, Abstract"
         data-lb-meta="Print · Bins 2023">
@@ -205,6 +208,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-card="art"
         data-lb-canvas="ac4"
         data-lb-title="Architectural Study, Rome"
         data-lb-meta="Photography · Gift 2022">
@@ -218,6 +222,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-2"
+        data-card="art"
         data-lb-canvas="ac5"
         data-lb-title="Hand-Woven Wall Piece"
         data-lb-meta="Textile · Maker's Market 2025">
@@ -231,6 +236,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-3"
+        data-card="art"
         data-lb-canvas="ac6"
         data-lb-title="Landscape Fragment"
         data-lb-meta="Oil on board · Value Village 2024">
@@ -244,6 +250,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal"
+        data-card="art"
         data-lb-canvas="ac7"
         data-lb-title="Cast Iron Form"
         data-lb-meta="Sculpture · Industrial Auction 2023">
@@ -257,6 +264,7 @@
       </div>
 
       <div class="art-card lightbox-trigger reveal reveal-delay-1"
+        data-card="art"
         data-lb-canvas="ac8"
         data-lb-title="Interior, Morning Light"
         data-lb-meta="Watercolour · Artist Studio 2026">
@@ -286,7 +294,7 @@
           you whether you're supposed to.
         </p>
       </div>
-      <div class="art-spotlight-img">
+      <div class="art-spotlight-img" data-card="art-spotlight">
         <canvas id="ac-spot"></canvas>
       </div>
     </div>
@@ -305,6 +313,7 @@
   </footer>
 
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/cards.js"></script>
   <script src="../assets/js/lightbox.js"></script>
   <script>
     // Art hero canvas — warm organic flow field
@@ -350,76 +359,6 @@
         ctx.globalAlpha=1; t++;
       })();
     })();
-
-    // Art card canvases — each a different MCM painting-like composition
-    const artCards = [
-      { id:'ac1', bg:'#EDE5D4', shapes:[{c:'#C4622D',x:.3,y:.4,r:.3},{c:'#5C3D2E',x:.7,y:.6,r:.2}] },
-      { id:'ac2', bg:'#2C2C2C', shapes:[{c:'#D4A843',x:.5,y:.5,r:.28},{c:'#C4622D',x:.75,y:.25,r:.12}] },
-      { id:'ac3', bg:'#7A8C6E', shapes:[{c:'#F5F0E8',x:.35,y:.55,r:.25},{c:'#D4A843',x:.65,y:.3,r:.15}] },
-      { id:'ac4', bg:'#1A1A1A', shapes:[{c:'#C4622D',x:.5,y:.5,r:.35},{c:'#D4A843',x:.2,y:.2,r:.1}] },
-      { id:'ac5', bg:'#F5F0E8', shapes:[{c:'#C4622D',x:.4,y:.5,r:.3},{c:'#7A8C6E',x:.75,y:.4,r:.2}] },
-      { id:'ac6', bg:'#5C3D2E', shapes:[{c:'#D4A843',x:.55,y:.45,r:.28},{c:'#F5F0E8',x:.25,y:.65,r:.15}] },
-      { id:'ac7', bg:'#3A3A3A', shapes:[{c:'#7A8C6E',x:.5,y:.5,r:.32},{c:'#C4622D',x:.8,y:.2,r:.12}] },
-      { id:'ac8', bg:'#EDE5D4', shapes:[{c:'#5C3D2E',x:.3,y:.6,r:.25},{c:'#C4622D',x:.7,y:.35,r:.2}] },
-    ];
-
-    function drawArtCard(cfg) {
-      const c = document.getElementById(cfg.id);
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const par = c.parentElement;
-      c.width  = par.offsetWidth  || 400;
-      c.height = par.offsetHeight || 500;
-      const W = c.width, H = c.height;
-      ctx.fillStyle = cfg.bg; ctx.fillRect(0,0,W,H);
-      cfg.shapes.forEach(s => {
-        ctx.globalAlpha = .35 + Math.random()*.2;
-        ctx.fillStyle = s.c;
-        ctx.beginPath(); ctx.arc(s.x*W, s.y*H, s.r*W, 0, Math.PI*2); ctx.fill();
-      });
-      // paint-like brushstroke texture
-      ctx.globalAlpha = .06;
-      for(let i=0;i<80;i++){
-        ctx.strokeStyle = ['#fff','#000','#C4622D'][i%3];
-        ctx.lineWidth = Math.random()*8+2;
-        ctx.beginPath();
-        ctx.moveTo(Math.random()*W, Math.random()*H);
-        ctx.quadraticCurveTo(Math.random()*W,Math.random()*H,Math.random()*W,Math.random()*H);
-        ctx.stroke();
-      }
-      ctx.globalAlpha=1;
-    }
-
-    function drawSpotlight(id) {
-      const c = document.getElementById(id);
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const par = c.parentElement;
-      c.width  = par.offsetWidth  || 600;
-      c.height = par.offsetHeight || 400;
-      const W = c.width, H = c.height;
-      const g = ctx.createLinearGradient(0,0,W,H);
-      g.addColorStop(0,'#3A2A20'); g.addColorStop(1,'#1A1A1A');
-      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-      // layered shapes
-      [[.3,.5,.4,'#C4622D',.25],[.7,.4,.25,'#D4A843',.15],[.5,.7,.2,'#7A8C6E',.12]].forEach(([x,y,r,col,a])=>{
-        ctx.globalAlpha=a; ctx.fillStyle=col;
-        ctx.beginPath(); ctx.arc(x*W,y*H,r*W,0,Math.PI*2); ctx.fill();
-      });
-      ctx.globalAlpha=.05;
-      for(let i=0;i<100;i++){
-        ctx.strokeStyle='#fff'; ctx.lineWidth=Math.random()*6+1;
-        ctx.beginPath(); ctx.moveTo(Math.random()*W,Math.random()*H);
-        ctx.quadraticCurveTo(Math.random()*W,Math.random()*H,Math.random()*W,Math.random()*H);
-        ctx.stroke();
-      }
-      ctx.globalAlpha=1;
-    }
-
-    window.addEventListener('load', () => {
-      artCards.forEach(drawArtCard);
-      drawSpotlight('ac-spot');
-    });
   </script>
 </body>
 </html>

@@ -239,7 +239,7 @@
   <div class="finds-section">
 
     <!-- Featured -->
-    <div class="find-featured reveal">
+    <div class="find-featured reveal" data-card="featured">
       <div class="find-featured-img"><canvas id="ff1"></canvas></div>
       <div class="find-featured-text">
         <span class="eyebrow">Find of the Year</span>
@@ -258,10 +258,11 @@
     <div class="finds-grid">
 
       <a href="#" class="find-item lightbox-trigger reveal"
+        data-card="find"
         data-lb-canvas="fi1"
         data-lb-title="Danish Teak Side Table"
         data-lb-meta="Value Village · Toronto">
-        <div class="find-item-img" style="aspect-ratio:3/4"><!-- fi1 --><canvas id="fi1" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:3/4" data-aspect="3/4"><!-- fi1 --><canvas id="fi1" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Danish Teak Side Table</span>
@@ -274,10 +275,11 @@
       </a>
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
+        data-card="find"
         data-lb-canvas="fi2"
         data-lb-title="Ceramic Vessel, Unsigned"
         data-lb-meta="Goodwill · Kensington">
-        <div class="find-item-img" style="aspect-ratio:1/1"><!-- fi2 --><canvas id="fi2" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:1/1" data-aspect="1/1"><!-- fi2 --><canvas id="fi2" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Ceramic Vessel, Unsigned</span>
@@ -290,10 +292,11 @@
       </a>
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
+        data-card="find"
         data-lb-canvas="fi3"
         data-lb-title="Brass Floor Lamp, 1960s"
         data-lb-meta="Salvation Army · Parkdale">
-        <div class="find-item-img" style="aspect-ratio:4/3"><!-- fi3 --><canvas id="fi3" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:4/3" data-aspect="4/3"><!-- fi3 --><canvas id="fi3" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Brass Floor Lamp, 1960s</span>
@@ -306,10 +309,11 @@
       </a>
 
       <a href="#" class="find-item lightbox-trigger reveal"
+        data-card="find"
         data-lb-canvas="fi4"
         data-lb-title="Woven Rattan Chair"
         data-lb-meta="Flea Market · Leslieville">
-        <div class="find-item-img" style="aspect-ratio:3/4"><!-- fi4 --><canvas id="fi4" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:3/4" data-aspect="3/4"><!-- fi4 --><canvas id="fi4" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Woven Rattan Chair</span>
@@ -322,10 +326,11 @@
       </a>
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-1"
+        data-card="find"
         data-lb-canvas="fi5"
         data-lb-title="Pyrex Casserole Set"
         data-lb-meta="Bins · Scarborough">
-        <div class="find-item-img" style="aspect-ratio:4/3"><!-- fi5 --><canvas id="fi5" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:4/3" data-aspect="4/3"><!-- fi5 --><canvas id="fi5" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Pyrex Casserole Set</span>
@@ -338,10 +343,11 @@
       </a>
 
       <a href="#" class="find-item lightbox-trigger reveal reveal-delay-2"
+        data-card="find"
         data-lb-canvas="fi6"
         data-lb-title="Linen Throw, Belgian"
         data-lb-meta="Estate Sale · Rosedale">
-        <div class="find-item-img" style="aspect-ratio:1/1"><!-- fi6 --><canvas id="fi6" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-img" style="aspect-ratio:1/1" data-aspect="1/1"><!-- fi6 --><canvas id="fi6" style="height:100%;position:absolute;inset:0"></canvas></div>
         <div class="find-item-body">
           <div class="find-item-top">
             <span class="find-item-name">Linen Throw, Belgian</span>
@@ -368,6 +374,7 @@
   </footer>
 
   <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/cards.js"></script>
   <script src="../assets/js/lightbox.js"></script>
   <script>
     // Mini particle canvas for page hero
@@ -405,61 +412,6 @@
         ctx.globalAlpha=1; t++;
       })();
     })();
-
-    // Draw find card placeholder canvases
-    function drawFind(id, colors, ar) {
-      const c = document.getElementById(id);
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const parent = c.parentElement;
-      const pw = parent.offsetWidth || 300;
-      c.width = pw;
-      c.height = pw / ar;
-      const W = c.width, H = c.height;
-      ctx.fillStyle = colors[0]; ctx.fillRect(0,0,W,H);
-      ctx.fillStyle = colors[1];
-      ctx.beginPath(); ctx.moveTo(0,H*.5); ctx.lineTo(W,H*.25); ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.fill();
-      ctx.fillStyle = colors[2]; ctx.globalAlpha=.6;
-      ctx.beginPath(); ctx.arc(W*.65,H*.38,W*.14,0,Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1;
-      for(let i=0;i<3000;i++){
-        ctx.fillStyle='rgba(0,0,0,'+(Math.random()*.03)+')';
-        ctx.fillRect(Math.random()*W,Math.random()*H,2,2);
-      }
-    }
-
-    function drawFeatured(id, colors) {
-      const c = document.getElementById(id);
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const parent = c.parentElement;
-      c.width  = parent.offsetWidth  || 600;
-      c.height = parent.offsetHeight || 400;
-      const W = c.width, H = c.height;
-      const g = ctx.createLinearGradient(0,0,W,H);
-      g.addColorStop(0, colors[0]); g.addColorStop(1, colors[1]);
-      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-      ctx.fillStyle = colors[2]; ctx.globalAlpha = .25;
-      ctx.beginPath(); ctx.arc(W*.3, H*.6, W*.35, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha = .15;
-      ctx.beginPath(); ctx.arc(W*.8, H*.2, W*.2, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1;
-      for(let i=0;i<5000;i++){
-        ctx.fillStyle='rgba(0,0,0,'+(Math.random()*.02)+')';
-        ctx.fillRect(Math.random()*W,Math.random()*H,2,2);
-      }
-    }
-
-    window.addEventListener('load', () => {
-      drawFeatured('ff1', ['#3A2A20','#1A1A1A','#C4622D']);
-      drawFind('fi1', ['#5C3D2E','#D4A843','#F5F0E8'], 3/4);
-      drawFind('fi2', ['#EDE5D4','#C4622D','#7A8C6E'], 1);
-      drawFind('fi3', ['#2C2C2C','#D4A843','#C4622D'], 4/3);
-      drawFind('fi4', ['#7A8C6E','#F5F0E8','#5C3D2E'], 3/4);
-      drawFind('fi5', ['#F5F0E8','#C4622D','#D4A843'], 4/3);
-      drawFind('fi6', ['#D4A843','#2C2C2C','#C4622D'], 1);
-    });
-
     // Filter buttons (UI only for now)
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
