@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Art &amp; Objects — Mott Spaces</title>
+  <meta name="description" content="Paintings, prints, ceramics, and things worth looking at longer." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <style>
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.25,.46,.45,.94),transform .7s cubic-bezier(.25,.46,.45,.94); }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-delay-1 { transition-delay:.1s; }
+    .reveal-delay-2 { transition-delay:.22s; }
+    .reveal-delay-3 { transition-delay:.34s; }
+
+    /* ── Page Hero ── */
+    .page-hero {
+      min-height: 52vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 8rem var(--gutter) 4rem;
+      position: relative; overflow: hidden;
+      background: var(--cream);
+    }
+    #art-hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .page-hero-content { position: relative; z-index: 2; }
+    .page-hero .back-link {
+      position: absolute; top: 2rem; left: var(--gutter); z-index: 3;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--mid-gray); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s;
+    }
+    .page-hero .back-link:hover { color: var(--terracotta); }
+    .page-hero .eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 1rem; display: block; }
+    .page-hero h1 { font-family: var(--serif); font-size: clamp(3rem,7vw,5.5rem); font-weight: 300; color: var(--charcoal); line-height: 1; margin-bottom: 1.2rem; }
+    .page-hero h1 em { font-style: italic; color: var(--terracotta); }
+    .page-hero p { font-size: 1rem; color: var(--mid-gray); max-width: 480px; line-height: 1.75; }
+
+    /* ── Gallery ── */
+    .gallery-section { padding: 4rem var(--gutter); background: var(--warm-white); }
+
+    /* Wall-style layout: asymmetric, editorial */
+    .gallery-wall {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .art-card { position: relative; overflow: hidden; cursor: none; background: var(--light-gray); }
+    .art-card:nth-child(1)  { grid-column: span 5; aspect-ratio: 3/4; }
+    .art-card:nth-child(2)  { grid-column: span 4; aspect-ratio: 1/1; align-self: center; }
+    .art-card:nth-child(3)  { grid-column: span 3; aspect-ratio: 2/3; }
+    .art-card:nth-child(4)  { grid-column: span 7; aspect-ratio: 16/10; }
+    .art-card:nth-child(5)  { grid-column: span 5; aspect-ratio: 4/3; }
+    .art-card:nth-child(6)  { grid-column: span 4; aspect-ratio: 3/4; }
+    .art-card:nth-child(7)  { grid-column: span 4; aspect-ratio: 3/4; }
+    .art-card:nth-child(8)  { grid-column: span 4; aspect-ratio: 3/4; }
+
+    .art-card canvas,
+    .art-card img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+      filter: saturate(0.8);
+    }
+    .art-card:hover canvas,
+    .art-card:hover img { transform: scale(1.04); filter: saturate(1.05); }
+
+    /* Caption overlay */
+    .art-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(44,44,44,0.9) 0%, transparent 60%);
+      padding: 2rem 1.4rem 1.4rem;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .art-card:hover .art-caption { opacity: 1; transform: translateY(0); }
+    .art-caption h4 { font-family: var(--serif); font-size: 1.1rem; font-weight: 300; color: var(--cream); margin-bottom: 0.25rem; line-height: 1.2; }
+    .art-caption .art-meta { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mustard); }
+    .art-caption .art-note { font-size: 0.78rem; color: rgba(245,240,232,0.55); margin-top: 0.3rem; line-height: 1.5; }
+
+    /* medium tag on corner */
+    .art-tag {
+      position: absolute; top: 1rem; left: 1rem; z-index: 2;
+      font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+      background: rgba(245,240,232,0.9);
+      color: var(--charcoal);
+      padding: 3px 8px;
+      pointer-events: none;
+    }
+
+    /* ── Second row: text + image split ── */
+    .art-spotlight {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      background: var(--cream);
+      margin-top: 2rem;
+    }
+    .art-spotlight-text {
+      padding: 4rem;
+      display: flex; flex-direction: column; justify-content: center; gap: 1.2rem;
+      border-right: 1px solid var(--light-gray);
+    }
+    .art-spotlight-text .eyebrow { font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--terracotta); }
+    .art-spotlight-text h3 { font-family: var(--serif); font-size: clamp(1.8rem,3vw,2.6rem); font-weight: 300; line-height: 1.15; color: var(--charcoal); }
+    .art-spotlight-text h3 em { font-style: italic; }
+    .art-spotlight-text p { font-size: 0.95rem; color: var(--mid-gray); line-height: 1.8; }
+    .art-spotlight-img { aspect-ratio: 4/3; overflow: hidden; position: relative; }
+    .art-spotlight-img canvas,
+    .art-spotlight-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    @media (max-width: 900px) {
+      .gallery-wall { grid-template-columns: 1fr 1fr; }
+      .art-card:nth-child(n) { grid-column: span 1; aspect-ratio: 1/1; }
+      .art-spotlight { grid-template-columns: 1fr; }
+      .art-spotlight-text { padding: 2.5rem; border-right: none; border-bottom: 1px solid var(--light-gray); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- ── NAV ─────────────────────────────────── -->
+  <nav>
+    <a href="/" class="nav-logo">Mott<span>.</span>Spaces</a>
+    <ul class="nav-links">
+      <li><a href="../thrift/index.html">Thrift</a></li>
+      <li><a href="index.html" style="color:var(--terracotta)">Art</a></li>
+      <li><a href="../index.html#journal">Journal</a></li>
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── PAGE HERO ────────────────────────────── -->
+  <div class="page-hero">
+    <canvas id="art-hero-canvas" aria-hidden="true"></canvas>
+    <a href="../index.html" class="back-link">← Back home</a>
+    <div class="page-hero-content">
+      <span class="eyebrow reveal">Collection</span>
+      <h1 class="reveal reveal-delay-1">Art &amp;<br><em>Objects</em></h1>
+      <p class="reveal reveal-delay-2">Pieces that caught my eye. Paintings, prints, ceramics, and things worth looking at longer than usual.</p>
+    </div>
+  </div>
+
+  <!-- ── GALLERY ──────────────────────────────── -->
+  <div class="gallery-section">
+
+    <span class="section-label reveal">On the Walls &amp; Shelves</span>
+
+    <div class="gallery-wall">
+
+      <div class="art-card reveal">
+        <span class="art-tag">Oil on canvas</span>
+        <canvas id="ac1"></canvas>
+        <div class="art-caption">
+          <h4>Untitled Figure Study</h4>
+          <span class="art-meta">Found · Estate Sale 2024</span>
+          <p class="art-note">No signature. Gestural brushwork, likely 1960s–70s.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-1">
+        <span class="art-tag">Ceramic</span>
+        <canvas id="ac2"></canvas>
+        <div class="art-caption">
+          <h4>Stoneware Vessel</h4>
+          <span class="art-meta">Bought · Flea Market 2025</span>
+          <p class="art-note">Ash glaze, fire-marked base. Unknown studio potter.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-2">
+        <span class="art-tag">Print</span>
+        <canvas id="ac3"></canvas>
+        <div class="art-caption">
+          <h4>Lithograph, Abstract</h4>
+          <span class="art-meta">Found · Bins 2023</span>
+          <p class="art-note">Numbered 12/50. Still hunting the artist's name.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-1">
+        <span class="art-tag">Photography</span>
+        <canvas id="ac4"></canvas>
+        <div class="art-caption">
+          <h4>Architectural Study, Rome</h4>
+          <span class="art-meta">Gift · 2022</span>
+          <p class="art-note">Silver gelatin print, framed in original walnut.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-2">
+        <span class="art-tag">Textile</span>
+        <canvas id="ac5"></canvas>
+        <div class="art-caption">
+          <h4>Hand-Woven Wall Piece</h4>
+          <span class="art-meta">Bought · Maker's Market 2025</span>
+          <p class="art-note">Natural linen and wool. Takes the light well.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-3">
+        <span class="art-tag">Oil on board</span>
+        <canvas id="ac6"></canvas>
+        <div class="art-caption">
+          <h4>Landscape Fragment</h4>
+          <span class="art-meta">Found · Value Village 2024</span>
+          <p class="art-note">Tiny painting, huge presence. $4.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal">
+        <span class="art-tag">Sculpture</span>
+        <canvas id="ac7"></canvas>
+        <div class="art-caption">
+          <h4>Cast Iron Form</h4>
+          <span class="art-meta">Found · Industrial Auction 2023</span>
+          <p class="art-note">Industrial origin, repurposed as object. Heavy.</p>
+        </div>
+      </div>
+
+      <div class="art-card reveal reveal-delay-1">
+        <span class="art-tag">Watercolour</span>
+        <canvas id="ac8"></canvas>
+        <div class="art-caption">
+          <h4>Interior, Morning Light</h4>
+          <span class="art-meta">Bought · Artist Studio 2026</span>
+          <p class="art-note">Small format, local artist. Captures something true.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Spotlight piece -->
+    <div class="art-spotlight reveal">
+      <div class="art-spotlight-text">
+        <span class="eyebrow">Currently Obsessed With</span>
+        <h3>The <em>unnamed</em> oil painting that changed everything</h3>
+        <p>
+          Some pieces you walk past. This one stopped me mid-aisle at an estate sale on a Wednesday
+          morning. No signature, no label, no frame — just the painting, leaning against a filing
+          cabinet. I paid $6. It's now the first thing I see every morning.
+        </p>
+        <p>
+          That's what collecting really is: the willingness to stop and look before someone tells
+          you whether you're supposed to.
+        </p>
+      </div>
+      <div class="art-spotlight-img">
+        <canvas id="ac-spot"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FOOTER ────────────────────────────────── -->
+  <footer>
+    <span class="logo">Mott<span>.</span>Spaces</span>
+    <ul class="footer-links">
+      <li><a href="../thrift/index.html">Thrift</a></li>
+      <li><a href="index.html">Art</a></li>
+      <li><a href="../index.html#journal">Journal</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+    <p>© 2026 Mott Spaces.</p>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Art hero canvas — warm organic flow field
+    (function() {
+      const c = document.getElementById('art-hero-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let W, H;
+      function resize() { W = c.width = window.innerWidth; H = c.height = c.parentElement.offsetHeight || 500; }
+      resize(); window.addEventListener('resize', resize);
+      const cols = ['#C4622D','#D4A843','#7A8C6E','#5C3D2E'];
+      const pts = Array.from({length: 200}, () => ({
+        x: Math.random()*2000, y: Math.random()*600,
+        vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4,
+        r: Math.random()*2+.5,
+        color: cols[Math.floor(Math.random()*cols.length)],
+        a: Math.random()*.35+.1
+      }));
+      let t = 0;
+      (function loop(){
+        requestAnimationFrame(loop);
+        c.width = W;
+        // warm gradient
+        const g = ctx.createLinearGradient(0,0,W,H);
+        g.addColorStop(0,'#F5F0E8'); g.addColorStop(1,'#EDE5D4');
+        ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+        // grid
+        ctx.globalAlpha=0.035; ctx.strokeStyle='#5C3D2E'; ctx.lineWidth=1;
+        for(let x=0;x<W;x+=70){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+        for(let y=0;y<H;y+=70){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+        // particles
+        pts.forEach(p=>{
+          const ang = Math.sin(p.x*.004+t*.0004)*Math.cos(p.y*.004+t*.0003)*Math.PI*2;
+          p.vx+=Math.cos(ang)*.01; p.vy+=Math.sin(ang)*.01;
+          p.vx*=.98; p.vy*=.98;
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0) p.x=W; if(p.x>W) p.x=0;
+          if(p.y<0) p.y=H; if(p.y>H) p.y=0;
+          ctx.globalAlpha=p.a;
+          ctx.fillStyle=p.color;
+          ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+        });
+        ctx.globalAlpha=1; t++;
+      })();
+    })();
+
+    // Art card canvases — each a different MCM painting-like composition
+    const artCards = [
+      { id:'ac1', bg:'#EDE5D4', shapes:[{c:'#C4622D',x:.3,y:.4,r:.3},{c:'#5C3D2E',x:.7,y:.6,r:.2}] },
+      { id:'ac2', bg:'#2C2C2C', shapes:[{c:'#D4A843',x:.5,y:.5,r:.28},{c:'#C4622D',x:.75,y:.25,r:.12}] },
+      { id:'ac3', bg:'#7A8C6E', shapes:[{c:'#F5F0E8',x:.35,y:.55,r:.25},{c:'#D4A843',x:.65,y:.3,r:.15}] },
+      { id:'ac4', bg:'#1A1A1A', shapes:[{c:'#C4622D',x:.5,y:.5,r:.35},{c:'#D4A843',x:.2,y:.2,r:.1}] },
+      { id:'ac5', bg:'#F5F0E8', shapes:[{c:'#C4622D',x:.4,y:.5,r:.3},{c:'#7A8C6E',x:.75,y:.4,r:.2}] },
+      { id:'ac6', bg:'#5C3D2E', shapes:[{c:'#D4A843',x:.55,y:.45,r:.28},{c:'#F5F0E8',x:.25,y:.65,r:.15}] },
+      { id:'ac7', bg:'#3A3A3A', shapes:[{c:'#7A8C6E',x:.5,y:.5,r:.32},{c:'#C4622D',x:.8,y:.2,r:.12}] },
+      { id:'ac8', bg:'#EDE5D4', shapes:[{c:'#5C3D2E',x:.3,y:.6,r:.25},{c:'#C4622D',x:.7,y:.35,r:.2}] },
+    ];
+
+    function drawArtCard(cfg) {
+      const c = document.getElementById(cfg.id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const par = c.parentElement;
+      c.width  = par.offsetWidth  || 400;
+      c.height = par.offsetHeight || 500;
+      const W = c.width, H = c.height;
+      ctx.fillStyle = cfg.bg; ctx.fillRect(0,0,W,H);
+      cfg.shapes.forEach(s => {
+        ctx.globalAlpha = .35 + Math.random()*.2;
+        ctx.fillStyle = s.c;
+        ctx.beginPath(); ctx.arc(s.x*W, s.y*H, s.r*W, 0, Math.PI*2); ctx.fill();
+      });
+      // paint-like brushstroke texture
+      ctx.globalAlpha = .06;
+      for(let i=0;i<80;i++){
+        ctx.strokeStyle = ['#fff','#000','#C4622D'][i%3];
+        ctx.lineWidth = Math.random()*8+2;
+        ctx.beginPath();
+        ctx.moveTo(Math.random()*W, Math.random()*H);
+        ctx.quadraticCurveTo(Math.random()*W,Math.random()*H,Math.random()*W,Math.random()*H);
+        ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+
+    function drawSpotlight(id) {
+      const c = document.getElementById(id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const par = c.parentElement;
+      c.width  = par.offsetWidth  || 600;
+      c.height = par.offsetHeight || 400;
+      const W = c.width, H = c.height;
+      const g = ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'#3A2A20'); g.addColorStop(1,'#1A1A1A');
+      ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      // layered shapes
+      [[.3,.5,.4,'#C4622D',.25],[.7,.4,.25,'#D4A843',.15],[.5,.7,.2,'#7A8C6E',.12]].forEach(([x,y,r,col,a])=>{
+        ctx.globalAlpha=a; ctx.fillStyle=col;
+        ctx.beginPath(); ctx.arc(x*W,y*H,r*W,0,Math.PI*2); ctx.fill();
+      });
+      ctx.globalAlpha=.05;
+      for(let i=0;i<100;i++){
+        ctx.strokeStyle='#fff'; ctx.lineWidth=Math.random()*6+1;
+        ctx.beginPath(); ctx.moveTo(Math.random()*W,Math.random()*H);
+        ctx.quadraticCurveTo(Math.random()*W,Math.random()*H,Math.random()*W,Math.random()*H);
+        ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+
+    window.addEventListener('load', () => {
+      artCards.forEach(drawArtCard);
+      drawSpotlight('ac-spot');
+    });
+  </script>
+</body>
+</html>

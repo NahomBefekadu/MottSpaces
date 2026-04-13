@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thrift Finds — Mott Spaces</title>
+  <meta name="description" content="Documenting the best thrift scores, vintage furniture, and forgotten objects worth bringing back to life." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css" />
+
+  <style>
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.25,.46,.45,.94),transform .7s cubic-bezier(.25,.46,.45,.94); }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-delay-1 { transition-delay:.1s; }
+    .reveal-delay-2 { transition-delay:.2s; }
+    .reveal-delay-3 { transition-delay:.32s; }
+
+    /* ── Page Hero ── */
+    .page-hero {
+      min-height: 52vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 8rem var(--gutter) 4rem;
+      position: relative;
+      overflow: hidden;
+      background: var(--charcoal);
+    }
+    #thrift-hero-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    .page-hero-content { position: relative; z-index: 2; }
+    .page-hero .back-link {
+      position: absolute; top: 2rem; left: var(--gutter);
+      z-index: 3;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: rgba(245,240,232,0.5); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+      transition: color 0.3s;
+    }
+    .page-hero .back-link:hover { color: var(--mustard); }
+    .page-hero .eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mustard); margin-bottom: 1rem; display: block; }
+    .page-hero h1 { font-family: var(--serif); font-size: clamp(3rem,7vw,5.5rem); font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 1.2rem; }
+    .page-hero h1 em { font-style: italic; color: var(--terracotta); }
+    .page-hero p { font-size: 1rem; color: rgba(245,240,232,0.55); max-width: 480px; line-height: 1.75; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      padding: 1.5rem var(--gutter);
+      background: var(--warm-white);
+      border-bottom: 1px solid var(--light-gray);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); margin-right: 0.5rem; }
+    .filter-btn {
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--light-gray);
+      background: transparent;
+      color: var(--mid-gray);
+      cursor: none;
+      transition: all 0.25s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--terracotta);
+      color: var(--cream);
+      border-color: var(--terracotta);
+    }
+
+    /* ── Finds masonry grid ── */
+    .finds-section { padding: 4rem var(--gutter); background: var(--cream); }
+    .finds-grid {
+      columns: 3;
+      column-gap: 1.2rem;
+      margin-top: 2.5rem;
+    }
+    @media (max-width: 900px) { .finds-grid { columns: 2; } }
+    @media (max-width: 560px) { .finds-grid { columns: 1; } }
+
+    .find-item {
+      break-inside: avoid;
+      margin-bottom: 1.2rem;
+      position: relative;
+      overflow: hidden;
+      background: var(--light-gray);
+      cursor: none;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .find-item-img {
+      width: 100%;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .find-item-img canvas,
+    .find-item-img img {
+      width: 100%; display: block;
+      transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+      filter: saturate(0.85);
+    }
+    .find-item:hover .find-item-img canvas,
+    .find-item:hover .find-item-img img { transform: scale(1.04); filter: saturate(1.05); }
+
+    .find-item-body {
+      padding: 1.2rem 1.2rem 1.4rem;
+      background: var(--warm-white);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .find-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .find-item-name {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--charcoal);
+      line-height: 1.25;
+    }
+    .find-price-tag {
+      background: var(--terracotta);
+      color: var(--cream);
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      padding: 0.2rem 0.6rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .find-item-store {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mustard);
+    }
+    .find-item-retail {
+      font-size: 0.8rem;
+      color: var(--mid-gray);
+    }
+    .find-item-retail s { opacity: 0.5; }
+    .find-item-note {
+      font-size: 0.85rem;
+      color: var(--mid-gray);
+      line-height: 1.6;
+      margin-top: 0.2rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    /* ── Featured find ── */
+    .find-featured {
+      background: var(--charcoal);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 3rem;
+    }
+    .find-featured-img { aspect-ratio: 4/3; overflow: hidden; position: relative; }
+    .find-featured-img canvas,
+    .find-featured-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; filter: saturate(0.8);
+      transition: transform 1s ease, filter 1s ease;
+    }
+    .find-featured:hover .find-featured-img canvas,
+    .find-featured:hover .find-featured-img img { transform: scale(1.04); filter: saturate(1); }
+    .find-featured-text {
+      padding: 3.5rem;
+      display: flex; flex-direction: column; justify-content: center; gap: 1rem;
+    }
+    .find-featured-text .eyebrow { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mustard); }
+    .find-featured-text h2 { font-family: var(--serif); font-size: clamp(1.6rem,3vw,2.4rem); font-weight: 300; color: var(--cream); line-height: 1.15; }
+    .find-featured-text h2 em { font-style: italic; color: var(--terracotta); }
+    .find-featured-text p { font-size: 0.9rem; color: rgba(245,240,232,0.55); line-height: 1.75; }
+    .find-details-table { margin-top: 0.5rem; border-top: 1px solid rgba(245,240,232,0.1); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .detail-row { display: flex; justify-content: space-between; font-size: 0.75rem; }
+    .detail-row span:first-child { color: rgba(245,240,232,0.3); text-transform: uppercase; letter-spacing: 0.1em; }
+    .detail-row span:last-child  { color: var(--cream); }
+
+    @media (max-width: 768px) { .find-featured { grid-template-columns: 1fr; } .find-featured-text { padding: 2rem; } }
+  </style>
+</head>
+<body>
+
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- ── NAV ─────────────────────────────────── -->
+  <nav>
+    <a href="/" class="nav-logo">Mott<span>.</span>Spaces</a>
+    <ul class="nav-links">
+      <li><a href="index.html" style="color:var(--terracotta)">Thrift</a></li>
+      <li><a href="../art/index.html">Art</a></li>
+      <li><a href="../index.html#journal">Journal</a></li>
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── PAGE HERO ────────────────────────────── -->
+  <div class="page-hero">
+    <canvas id="thrift-hero-canvas" aria-hidden="true"></canvas>
+    <a href="../index.html" class="back-link">← Back home</a>
+    <div class="page-hero-content">
+      <span class="eyebrow reveal">Secondhand Scores</span>
+      <h1 class="reveal reveal-delay-1">Thrift<br><em>Finds</em></h1>
+      <p class="reveal reveal-delay-2">One person's trash, carefully chosen. Every piece documented with where it was found and what was paid.</p>
+    </div>
+  </div>
+
+  <!-- ── FILTER BAR ───────────────────────────── -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter</span>
+    <button class="filter-btn active">All</button>
+    <button class="filter-btn">Furniture</button>
+    <button class="filter-btn">Ceramics</button>
+    <button class="filter-btn">Lighting</button>
+    <button class="filter-btn">Textiles</button>
+    <button class="filter-btn">Objects</button>
+  </div>
+
+  <!-- ── FINDS ────────────────────────────────── -->
+  <div class="finds-section">
+
+    <!-- Featured -->
+    <div class="find-featured reveal">
+      <div class="find-featured-img"><canvas id="ff1"></canvas></div>
+      <div class="find-featured-text">
+        <span class="eyebrow">Find of the Month</span>
+        <h2>The <em>$15 Tulip Chair</em> Nobody Wanted</h2>
+        <p>Found buried under winter coats at a church rummage sale. Authentic Knoll base, original upholstery intact.</p>
+        <div class="find-details-table">
+          <div class="detail-row"><span>Where</span><span>St. Anne's Rummage Sale, Toronto</span></div>
+          <div class="detail-row"><span>Paid</span><span>$15</span></div>
+          <div class="detail-row"><span>Worth</span><span>~$800–1,200</span></div>
+          <div class="detail-row"><span>Condition</span><span>Near Mint</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Masonry grid -->
+    <div class="finds-grid">
+
+      <a href="#" class="find-item reveal">
+        <div class="find-item-img" style="aspect-ratio:3/4"><canvas id="fi1" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Danish Teak Side Table</span>
+            <span class="find-price-tag">$8</span>
+          </div>
+          <span class="find-item-store">Value Village · Toronto</span>
+          <span class="find-item-retail">Retail: <s>~$400</s></span>
+          <p class="find-item-note">Classic tapered legs, solid teak top. Light ring stain on one corner, easy fix.</p>
+        </div>
+      </a>
+
+      <a href="#" class="find-item reveal reveal-delay-1">
+        <div class="find-item-img" style="aspect-ratio:1/1"><canvas id="fi2" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Ceramic Vessel, Unsigned</span>
+            <span class="find-price-tag">$3</span>
+          </div>
+          <span class="find-item-store">Goodwill · Kensington</span>
+          <span class="find-item-retail">No retail equivalent</span>
+          <p class="find-item-note">Hand-thrown, matte glaze in warm ochre. Feels 70s. No maker's mark found.</p>
+        </div>
+      </a>
+
+      <a href="#" class="find-item reveal reveal-delay-2">
+        <div class="find-item-img" style="aspect-ratio:4/3"><canvas id="fi3" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Brass Floor Lamp, 1960s</span>
+            <span class="find-price-tag">$22</span>
+          </div>
+          <span class="find-item-store">Salvation Army · Parkdale</span>
+          <span class="find-item-retail">Retail: <s>~$300</s></span>
+          <p class="find-item-note">Adjustable arc, original shade intact. Needs new bulb socket.</p>
+        </div>
+      </a>
+
+      <a href="#" class="find-item reveal">
+        <div class="find-item-img" style="aspect-ratio:3/4"><canvas id="fi4" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Woven Rattan Chair</span>
+            <span class="find-price-tag">$12</span>
+          </div>
+          <span class="find-item-store">Flea Market · Leslieville</span>
+          <span class="find-item-retail">Retail: <s>~$200</s></span>
+          <p class="find-item-note">Minor rattan split on back panel, structurally sound. Pairs with everything.</p>
+        </div>
+      </a>
+
+      <a href="#" class="find-item reveal reveal-delay-1">
+        <div class="find-item-img" style="aspect-ratio:4/3"><canvas id="fi5" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Pyrex Casserole Set</span>
+            <span class="find-price-tag">$1</span>
+          </div>
+          <span class="find-item-store">Bins · Scarborough</span>
+          <span class="find-item-retail">Full set, no chips</span>
+          <p class="find-item-note">Butterprint pattern, complete 4-piece set. Pulled from the bins on a Tuesday.</p>
+        </div>
+      </a>
+
+      <a href="#" class="find-item reveal reveal-delay-2">
+        <div class="find-item-img" style="aspect-ratio:1/1"><canvas id="fi6" style="height:100%;position:absolute;inset:0"></canvas></div>
+        <div class="find-item-body">
+          <div class="find-item-top">
+            <span class="find-item-name">Linen Throw, Belgian</span>
+            <span class="find-price-tag">$5</span>
+          </div>
+          <span class="find-item-store">Estate Sale · Rosedale</span>
+          <span class="find-item-retail">Retail: <s>~$120</s></span>
+          <p class="find-item-note">Heavy weight, natural undyed linen. Monogram in corner — keeping it.</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── FOOTER ────────────────────────────────── -->
+  <footer>
+    <span class="logo">Mott<span>.</span>Spaces</span>
+    <ul class="footer-links">
+      <li><a href="index.html">Thrift</a></li>
+      <li><a href="../art/index.html">Art</a></li>
+      <li><a href="../index.html#journal">Journal</a></li>
+      <li><a href="../index.html#contact">Contact</a></li>
+    </ul>
+    <p>© 2026 Mott Spaces.</p>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    // Mini particle canvas for page hero
+    (function() {
+      const c = document.getElementById('thrift-hero-canvas');
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      let W, H;
+      function resize() { W = c.width = window.innerWidth; H = c.height = c.parentElement.offsetHeight || 500; }
+      resize(); window.addEventListener('resize', resize);
+      const pts = Array.from({length:120}, () => ({
+        x: Math.random()*1000, y: Math.random()*500,
+        vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+        r: Math.random()*1.5+.3,
+        color:['#C4622D','#D4A843','#7A8C6E'][Math.floor(Math.random()*3)],
+        a: Math.random()*.4+.1
+      }));
+      let t=0;
+      (function loop(){
+        requestAnimationFrame(loop);
+        c.width = W; // clear
+        ctx.fillStyle='#2C2C2C'; ctx.fillRect(0,0,W,H);
+        // subtle grid
+        ctx.globalAlpha=0.04; ctx.strokeStyle='#D4A843'; ctx.lineWidth=1;
+        for(let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+        for(let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+        pts.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0||p.x>W) p.vx*=-1;
+          if(p.y<0||p.y>H) p.vy*=-1;
+          ctx.globalAlpha=p.a;
+          ctx.fillStyle=p.color;
+          ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+        });
+        ctx.globalAlpha=1; t++;
+      })();
+    })();
+
+    // Draw find card placeholder canvases
+    function drawFind(id, colors, ar) {
+      const c = document.getElementById(id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const parent = c.parentElement;
+      const pw = parent.offsetWidth || 300;
+      c.width = pw;
+      c.height = pw / ar;
+      const W = c.width, H = c.height;
+      ctx.fillStyle = colors[0]; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = colors[1];
+      ctx.beginPath(); ctx.moveTo(0,H*.5); ctx.lineTo(W,H*.25); ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.fill();
+      ctx.fillStyle = colors[2]; ctx.globalAlpha=.6;
+      ctx.beginPath(); ctx.arc(W*.65,H*.38,W*.14,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+      for(let i=0;i<3000;i++){
+        ctx.fillStyle='rgba(0,0,0,'+(Math.random()*.03)+')';
+        ctx.fillRect(Math.random()*W,Math.random()*H,2,2);
+      }
+    }
+
+    function drawFeatured(id, colors) {
+      const c = document.getElementById(id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      const parent = c.parentElement;
+      c.width  = parent.offsetWidth  || 600;
+      c.height = parent.offsetHeight || 400;
+      const W = c.width, H = c.height;
+      const g = ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0, colors[0]); g.addColorStop(1, colors[1]);
+      ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = colors[2]; ctx.globalAlpha = .25;
+      ctx.beginPath(); ctx.arc(W*.3, H*.6, W*.35, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = .15;
+      ctx.beginPath(); ctx.arc(W*.8, H*.2, W*.2, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+      for(let i=0;i<5000;i++){
+        ctx.fillStyle='rgba(0,0,0,'+(Math.random()*.02)+')';
+        ctx.fillRect(Math.random()*W,Math.random()*H,2,2);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      drawFeatured('ff1', ['#3A2A20','#1A1A1A','#C4622D']);
+      drawFind('fi1', ['#5C3D2E','#D4A843','#F5F0E8'], 3/4);
+      drawFind('fi2', ['#EDE5D4','#C4622D','#7A8C6E'], 1);
+      drawFind('fi3', ['#2C2C2C','#D4A843','#C4622D'], 4/3);
+      drawFind('fi4', ['#7A8C6E','#F5F0E8','#5C3D2E'], 3/4);
+      drawFind('fi5', ['#F5F0E8','#C4622D','#D4A843'], 4/3);
+      drawFind('fi6', ['#D4A843','#2C2C2C','#C4622D'], 1);
+    });
+
+    // Filter buttons (UI only for now)
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
