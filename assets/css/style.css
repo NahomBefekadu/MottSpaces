@@ -416,10 +416,8 @@ section { padding: clamp(4rem, 10vw, 8rem) var(--gutter); }
 /* ── CONTACT ─────────────────────────────────── */
 #contact {
   background: var(--cream);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6rem;
-  align-items: start;
+  display: block;
+  max-width: 640px;
 }
 #contact .section-title { margin-bottom: 2rem; }
 .contact-detail {
