@@ -97,6 +97,14 @@
       display: block;
       text-decoration: none;
       color: inherit;
+      transition: opacity 0.25s ease;
+    }
+    .find-item.filtered-out {
+      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 0 !important;
+      overflow: hidden !important;
     }
     .find-item-img {
       width: 100%;
@@ -430,7 +438,7 @@
         const cat = btn.dataset.filter;
         findItems.forEach(item => {
           const match = cat === 'all' || item.dataset.category === cat;
-          item.style.display = match ? '' : 'none';
+          item.classList.toggle('filtered-out', !match);
         });
       });
     });
