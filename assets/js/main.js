@@ -352,8 +352,23 @@ if (aboutCanvas) {
   }
 
   // Draw the cloth quads + easel bar
+  // Each quad samples its colour from the cloth painting image
   function drawCloth(ctx, W) {
-    // Paper quads
+    const imgReady = clothImg.complete && clothImg.naturalWidth > 0;
+
+    // Keep sampler in sync with canvas size
+    if (imgReady && (clothSampler.width !== W || clothSampler.height !== aboutCanvas.height)) {
+      const H = aboutCanvas.height;
+      clothSampler.width  = W;
+      clothSampler.height = H;
+      const sc = clothSampler.getContext('2d');
+      // Cover-fit painting onto sampler
+      const iw = clothImg.naturalWidth, ih = clothImg.naturalHeight;
+      const scale = Math.max(W/iw, H/ih);
+      const dw = iw*scale, dh = ih*scale;
+      sc.drawImage(clothImg, (W-dw)/2, (H-dh)/2, dw, dh);
+    }
+
     for (let r = 0; r < ROWS-1; r++) {
       for (let c = 0; c < COLS-1; c++) {
         const tl = points[r*COLS+c],     tr = points[r*COLS+c+1];
@@ -362,18 +377,45 @@ if (aboutCanvas) {
         const h2 = constraints.find(cn=>cn.a===(r+1)*COLS+c&&cn.b===(r+1)*COLS+c+1&&cn.active);
         const v1 = constraints.find(cn=>cn.a===r*COLS+c    &&cn.b===(r+1)*COLS+c  &&cn.active);
         const v2 = constraints.find(cn=>cn.a===r*COLS+c+1  &&cn.b===(r+1)*COLS+c+1&&cn.active);
+
         if (h1&&h2&&v1&&v2) {
-          ctx.fillStyle = (r+c)%2===0 ? 'rgba(245,240,232,0.96)' : 'rgba(238,231,218,0.96)';
+          ctx.save();
+          // Clip to quad shape
           ctx.beginPath();
           ctx.moveTo(tl.x,tl.y); ctx.lineTo(tr.x,tr.y);
           ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y);
-          ctx.closePath(); ctx.fill();
+          ctx.closePath();
+          ctx.clip();
+
+          if (imgReady) {
+            // Draw the full painting — clipped to this quad
+            // Use a transform to map original pixel UVs to deformed positions
+            // UV coords: each quad knows where it started (rest position)
+            const origX = c * (W/(COLS-1));
+            const origY = 14 + r * (aboutCanvas.height*0.97/(ROWS-1));
+            const qw = W/(COLS-1);
+            const qh = aboutCanvas.height*0.97/(ROWS-1);
+
+            // Build transform: map unit square → deformed quad via affine approx
+            const ax = tr.x-tl.x, ay = tr.y-tl.y; // right
+            const bx = bl.x-tl.x, by = bl.y-tl.y; // down
+            ctx.transform(ax/qw, ay/qw, bx/qh, by/qh, tl.x, tl.y);
+
+            // Draw full sampler shifted so this quad's original position maps to (0,0)
+            ctx.drawImage(clothSampler, -origX, -origY);
+          } else {
+            // Fallback flat colour
+            ctx.fillStyle = (r+c)%2===0 ? 'rgba(245,240,232,0.96)' : 'rgba(238,231,218,0.96)';
+            ctx.fill();
+          }
+          ctx.restore();
         }
       }
     }
-    // Cloth seam lines
-    ctx.strokeStyle = 'rgba(160,145,128,0.18)';
-    ctx.lineWidth = 0.6;
+
+    // Subtle seam lines
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 0.5;
     constraints.forEach(cn => {
       if (!cn.active) return;
       ctx.beginPath();
@@ -381,6 +423,7 @@ if (aboutCanvas) {
       ctx.lineTo(points[cn.b].x, points[cn.b].y);
       ctx.stroke();
     });
+
     // Easel top bar
     ctx.save();
     ctx.fillStyle   = '#5C3D2E';
@@ -410,9 +453,16 @@ if (aboutCanvas) {
     ctx.globalAlpha = 1;
   }
 
-  // Load the reveal image (shown under cloth as it tears)
+  // Bottom layer: revealed when cloth tears away
   const revealImg = new Image();
   revealImg.src = 'assets/images/chair-placeholder.jpg';
+
+  // Top layer: the cloth IS this painting — tears through it
+  const clothImg = new Image();
+  clothImg.src = 'assets/images/cloth-painting.jpg';
+
+  // Off-screen canvas to sample cloth image pixels per quad
+  const clothSampler = document.createElement('canvas');
 
   let t2 = 0;
   function aboutLoop() {
