@@ -46,10 +46,10 @@ if (heroCanvas) {
   function resize() {
     W = heroCanvas.width  = window.innerWidth;
     H = heroCanvas.height = window.innerHeight;
-    buildChairTargets();
+    // buildChairTargets() called separately after SHAPES is defined
   }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', () => { resize(); buildChairTargets(); });
 
   const PALETTE = ['#C4622D','#D4A843','#7A8C6E','#5C3D2E','#8A8A8A'];
 
@@ -160,7 +160,6 @@ if (heroCanvas) {
   // shapeIndex declared above at top of heroCanvas block
 
   function buildChairTargets() {
-    if (typeof SHAPES === 'undefined' || !SHAPES.length) return; // guard: called before SHAPES is ready
     const scale = Math.min(W, H) / 280;
     const cx = W * 0.65;
     const cy = H * 0.72;
