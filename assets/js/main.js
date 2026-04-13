@@ -155,86 +155,278 @@ if (heroCanvas) {
   });
 }
 
-// ── 4. ABOUT CANVAS — Bauhaus / MCM Geometric ─
-// Inspired by html-in-canvas & geometric experiments
+// ── 4. ABOUT CANVAS — Tearable Easel with MCM Chair ─────────────────────────
+// Inspired by tearable.website & html-in-canvas from #creative-coding
+// Cloth physics: verlet integration on a grid of points
+// Drawing: vector line-art of a mid-century tulip/shell chair
+
 const aboutCanvas = document.getElementById('about-canvas');
 if (aboutCanvas) {
   const ctx2 = aboutCanvas.getContext('2d');
-  aboutCanvas.width  = aboutCanvas.offsetWidth  || 500;
-  aboutCanvas.height = aboutCanvas.offsetHeight || 625;
-  const AW = aboutCanvas.width, AH = aboutCanvas.height;
 
-  // Responsive resize
-  const resizeObs = new ResizeObserver(() => {
-    aboutCanvas.width  = aboutCanvas.offsetWidth;
-    aboutCanvas.height = aboutCanvas.offsetHeight;
-  });
-  resizeObs.observe(aboutCanvas);
+  // Sizing
+  function resizeAbout() {
+    aboutCanvas.width  = aboutCanvas.offsetWidth  || 500;
+    aboutCanvas.height = aboutCanvas.offsetHeight || 625;
+    initCloth();
+  }
 
-  // MCM geometric shapes — think Eames, Saarinen posters
-  const shapes = [
-    { type: 'circle',   x: 0.5,  y: 0.38, r: 0.28,  color: '#C4622D', alpha: 0.15, speed: 0.0004 },
-    { type: 'circle',   x: 0.78, y: 0.65, r: 0.18,  color: '#D4A843', alpha: 0.2,  speed: 0.0006 },
-    { type: 'rect',     x: 0.15, y: 0.55, w: 0.35, h: 0.55, color: '#7A8C6E', alpha: 0.1, speed: 0.0003 },
-    { type: 'triangle', x: 0.6,  y: 0.75, r: 0.22,  color: '#5C3D2E', alpha: 0.12, speed: 0.0005 },
-    { type: 'circle',   x: 0.25, y: 0.2,  r: 0.12,  color: '#D4A843', alpha: 0.25, speed: 0.0007 },
-  ];
+  // Cloth config
+  const COLS = 26, ROWS = 20;
+  const GRAVITY = 0.42;
+  const STIFFNESS = 3;
+  const TEAR_DIST = 55;
+  let points = [], constraints = [];
+  let mouse = { x:0, y:0, down:false, px:0, py:0 };
+
+  function initCloth() {
+    const W = aboutCanvas.width, H = aboutCanvas.height;
+    const spacingX = W / (COLS - 1);
+    const spacingY = (H * 0.52) / (ROWS - 1);
+    const startY   = 18;
+    points = []; constraints = [];
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const x = c * spacingX;
+        const y = startY + r * spacingY;
+        points.push({ x, y, px: x, py: y, pinned: r === 0 });
+      }
+    }
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const i = r * COLS + c;
+        if (c < COLS-1) constraints.push({ a:i, b:i+1,      len:spacingX, active:true });
+        if (r < ROWS-1) constraints.push({ a:i, b:i+COLS,   len:spacingY, active:true });
+      }
+    }
+  }
+  initCloth();
+  new ResizeObserver(resizeAbout).observe(aboutCanvas);
+
+  // Verlet physics
+  function updateCloth() {
+    const H = aboutCanvas.height;
+    points.forEach(p => {
+      if (p.pinned) return;
+      const vx = (p.x - p.px) * 0.98;
+      const vy = (p.y - p.py) * 0.98;
+      p.px = p.x; p.py = p.y;
+      p.x += vx; p.y += vy + GRAVITY;
+      if (p.y > H) { p.y = H; p.py = p.y + vy * 0.3; }
+    });
+    for (let iter = 0; iter < STIFFNESS; iter++) {
+      constraints.forEach(cn => {
+        if (!cn.active) return;
+        const a = points[cn.a], b = points[cn.b];
+        const dx = b.x-a.x, dy = b.y-a.y;
+        const dist = Math.sqrt(dx*dx+dy*dy) || 0.001;
+        if (dist > TEAR_DIST) { cn.active = false; return; }
+        const diff = (dist - cn.len) / dist * 0.5;
+        const ox = dx*diff, oy = dy*diff;
+        if (!a.pinned) { a.x += ox; a.y += oy; }
+        if (!b.pinned) { b.x -= ox; b.y -= oy; }
+      });
+    }
+  }
+
+  // Mouse/touch
+  function getPos(e) {
+    const rect = aboutCanvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  }
+  function doTear(e) {
+    const p = getPos(e);
+    const dx = p.x - mouse.x, dy = p.y - mouse.y;
+    const speed = Math.sqrt(dx*dx + dy*dy);
+    mouse.px = mouse.x; mouse.py = mouse.y;
+    mouse.x = p.x; mouse.y = p.y;
+    constraints.forEach(cn => {
+      if (!cn.active) return;
+      const a = points[cn.a], b = points[cn.b];
+      const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+      const d = Math.sqrt((mx-mouse.x)**2+(my-mouse.y)**2);
+      if (d < 20 + speed * 1.8) cn.active = false;
+    });
+    points.forEach(pt => {
+      const d = Math.sqrt((pt.x-mouse.x)**2+(pt.y-mouse.y)**2);
+      if (d < 45) { pt.x += dx*0.55; pt.y += dy*0.55; }
+    });
+  }
+  aboutCanvas.addEventListener('mousemove',  e => { const p=getPos(e); if(mouse.down) doTear(e); else { mouse.x=p.x; mouse.y=p.y; } });
+  aboutCanvas.addEventListener('mousedown',  e => { mouse.down=true; const p=getPos(e); mouse.x=p.x; mouse.y=p.y; mouse.px=p.x; mouse.py=p.y; });
+  aboutCanvas.addEventListener('mouseup',    () => { mouse.down=false; });
+  aboutCanvas.addEventListener('mouseleave', () => { mouse.down=false; });
+  aboutCanvas.addEventListener('touchmove',  e => { e.preventDefault(); mouse.down=true; doTear(e); }, { passive:false });
+  aboutCanvas.addEventListener('touchstart', e => { const p=getPos(e); mouse.x=p.x; mouse.y=p.y; mouse.px=p.x; mouse.py=p.y; mouse.down=true; });
+  aboutCanvas.addEventListener('touchend',   () => { mouse.down=false; });
+
+  // Vector line-art: mid-century tulip/shell chair
+  function drawChair(ctx, W, H) {
+    ctx.save();
+    const cx = W * 0.5;
+    const by = H * 0.9;
+    const sc = Math.min(W, H) / 260;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    function pt(x, y) { return [cx + x*sc, by + y*sc]; }
+
+    // Shadow
+    const sg = ctx.createRadialGradient(cx, by+5*sc, 2*sc, cx, by+5*sc, 55*sc);
+    sg.addColorStop(0, 'rgba(44,44,44,0.2)');
+    sg.addColorStop(1, 'rgba(44,44,44,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.ellipse(cx, by+4*sc, 55*sc, 11*sc, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // Base disc
+    ctx.strokeStyle = '#5C3D2E';
+    ctx.lineWidth = 2*sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, by, 48*sc, 9*sc, 0, 0, Math.PI*2);
+    ctx.stroke();
+
+    // Pedestal
+    ctx.strokeStyle = '#5C3D2E';
+    ctx.lineWidth = 4*sc;
+    ctx.beginPath();
+    ctx.moveTo(...pt(0, -5));
+    ctx.bezierCurveTo(...pt(-4,-55), ...pt(-6,-95), ...pt(0,-108));
+    ctx.stroke();
+
+    // Seat underside spread
+    ctx.strokeStyle = '#5C3D2E';
+    ctx.lineWidth = 2.2*sc;
+    ctx.beginPath();
+    ctx.moveTo(...pt(0,-108));
+    ctx.bezierCurveTo(...pt(-20,-108), ...pt(-55,-112), ...pt(-60,-118));
+    ctx.moveTo(...pt(0,-108));
+    ctx.bezierCurveTo(...pt(20,-108),  ...pt(55,-112),  ...pt(60,-118));
+    ctx.stroke();
+
+    // Seat bowl outer
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 3*sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, by-122*sc, 62*sc, 24*sc, -0.08, 0, Math.PI*2);
+    ctx.stroke();
+
+    // Seat bowl inner
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 1.5*sc;
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.ellipse(cx, by-125*sc, 42*sc, 14*sc, -0.05, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Back shell outline
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 3*sc;
+    ctx.beginPath();
+    ctx.moveTo(...pt(-60,-116));
+    ctx.bezierCurveTo(...pt(-72,-155), ...pt(-52,-228), ...pt(0,-240));
+    ctx.bezierCurveTo(...pt(52,-228),  ...pt(72,-155),  ...pt(60,-116));
+    ctx.stroke();
+
+    // Back shell inner curve
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 1.4*sc;
+    ctx.globalAlpha = 0.28;
+    ctx.beginPath();
+    ctx.moveTo(...pt(-38,-120));
+    ctx.bezierCurveTo(...pt(-46,-162), ...pt(-30,-220), ...pt(0,-232));
+    ctx.bezierCurveTo(...pt(30,-220),  ...pt(46,-162),  ...pt(38,-120));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Mustard accent dot at pedestal base
+    ctx.fillStyle = '#D4A843';
+    ctx.beginPath();
+    ctx.arc(...pt(0,-108), 5*sc, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // Draw the cloth quads + easel bar
+  function drawCloth(ctx, W) {
+    // Paper quads
+    for (let r = 0; r < ROWS-1; r++) {
+      for (let c = 0; c < COLS-1; c++) {
+        const tl = points[r*COLS+c],     tr = points[r*COLS+c+1];
+        const bl = points[(r+1)*COLS+c], br = points[(r+1)*COLS+c+1];
+        const h1 = constraints.find(cn=>cn.a===r*COLS+c    &&cn.b===r*COLS+c+1    &&cn.active);
+        const h2 = constraints.find(cn=>cn.a===(r+1)*COLS+c&&cn.b===(r+1)*COLS+c+1&&cn.active);
+        const v1 = constraints.find(cn=>cn.a===r*COLS+c    &&cn.b===(r+1)*COLS+c  &&cn.active);
+        const v2 = constraints.find(cn=>cn.a===r*COLS+c+1  &&cn.b===(r+1)*COLS+c+1&&cn.active);
+        if (h1&&h2&&v1&&v2) {
+          ctx.fillStyle = (r+c)%2===0 ? 'rgba(245,240,232,0.96)' : 'rgba(238,231,218,0.96)';
+          ctx.beginPath();
+          ctx.moveTo(tl.x,tl.y); ctx.lineTo(tr.x,tr.y);
+          ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+    }
+    // Cloth seam lines
+    ctx.strokeStyle = 'rgba(160,145,128,0.18)';
+    ctx.lineWidth = 0.6;
+    constraints.forEach(cn => {
+      if (!cn.active) return;
+      ctx.beginPath();
+      ctx.moveTo(points[cn.a].x, points[cn.a].y);
+      ctx.lineTo(points[cn.b].x, points[cn.b].y);
+      ctx.stroke();
+    });
+    // Easel top bar
+    ctx.save();
+    ctx.fillStyle   = '#5C3D2E';
+    ctx.strokeStyle = '#3A2010';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, 18, [0,0,4,4]);
+    ctx.fill(); ctx.stroke();
+    for (let i = 0; i < COLS; i++) {
+      ctx.fillStyle = '#D4A843';
+      ctx.beginPath();
+      ctx.arc(points[i].x, 9, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // Fade-out hint
+  function drawHint(ctx, W, H, t2) {
+    const alpha = Math.max(0, 0.5 - t2 * 0.0025);
+    if (alpha <= 0) return;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#8A8A8A';
+    ctx.font = `${Math.round(Math.min(W,H)*0.033)}px 'DM Sans', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('drag to tear', W/2, H*0.76);
+    ctx.globalAlpha = 1;
+  }
 
   let t2 = 0;
   function aboutLoop() {
     requestAnimationFrame(aboutLoop);
     const W = aboutCanvas.width, H = aboutCanvas.height;
-    ctx2.clearRect(0, 0, W, H);
-    // Base
-    ctx2.fillStyle = '#2C2C2C'; ctx2.fillRect(0, 0, W, H);
-
-    shapes.forEach((s, i) => {
-      const pulse = Math.sin(t2 * s.speed * 1000 + i) * 0.05;
-      ctx2.globalAlpha = s.alpha + pulse * 0.05;
-      ctx2.fillStyle = s.color;
-
-      if (s.type === 'circle') {
-        const cx = s.x * W + Math.sin(t2 * s.speed * 800 + i * 1.3) * 18;
-        const cy = s.y * H + Math.cos(t2 * s.speed * 600 + i * 0.9) * 14;
-        ctx2.beginPath();
-        ctx2.arc(cx, cy, s.r * W * (1 + pulse), 0, Math.PI * 2);
-        ctx2.fill();
-      } else if (s.type === 'rect') {
-        const rx = s.x * W;
-        const ry = s.y * H + Math.sin(t2 * s.speed * 700) * 20;
-        ctx2.save();
-        ctx2.translate(rx, ry);
-        ctx2.rotate(Math.sin(t2 * s.speed * 500) * 0.08);
-        ctx2.fillRect(-s.w * W / 2, -s.h * H / 2, s.w * W, s.h * H);
-        ctx2.restore();
-      } else if (s.type === 'triangle') {
-        const tx = s.x * W;
-        const ty = s.y * H + Math.cos(t2 * s.speed * 600) * 15;
-        const tr = s.r * W;
-        ctx2.save();
-        ctx2.translate(tx, ty);
-        ctx2.rotate(t2 * s.speed * 0.3);
-        ctx2.beginPath();
-        ctx2.moveTo(0, -tr);
-        ctx2.lineTo(tr * 0.866, tr * 0.5);
-        ctx2.lineTo(-tr * 0.866, tr * 0.5);
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.restore();
-      }
-    });
-
-    // Fine grid overlay
-    ctx2.globalAlpha = 0.04;
-    ctx2.strokeStyle = '#F5F0E8';
-    ctx2.lineWidth = 1;
-    for (let x = 0; x < W; x += 40) {
-      ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, H); ctx2.stroke();
-    }
-    for (let y = 0; y < H; y += 40) {
-      ctx2.beginPath(); ctx2.moveTo(0, y); ctx2.lineTo(W, y); ctx2.stroke();
-    }
+    updateCloth();
+    // Paper background
+    ctx2.fillStyle = '#FDFAF4'; ctx2.fillRect(0,0,W,H);
+    // Grid on paper
+    ctx2.globalAlpha = 0.04; ctx2.strokeStyle = '#5C3D2E'; ctx2.lineWidth = 1;
+    for (let x=0;x<W;x+=30){ctx2.beginPath();ctx2.moveTo(x,0);ctx2.lineTo(x,H);ctx2.stroke();}
+    for (let y=0;y<H;y+=30){ctx2.beginPath();ctx2.moveTo(0,y);ctx2.lineTo(W,y);ctx2.stroke();}
     ctx2.globalAlpha = 1;
+    // Chair behind cloth
+    drawChair(ctx2, W, H);
+    // Cloth on top
+    drawCloth(ctx2, W);
+    drawHint(ctx2, W, H, t2);
     t2++;
   }
   aboutLoop();
