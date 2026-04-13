@@ -172,7 +172,7 @@ if (aboutCanvas) {
   }
 
   // Cloth config
-  const COLS = 26, ROWS = 20;
+  const COLS = 28, ROWS = 26;
   const GRAVITY = 0.42;
   const STIFFNESS = 3;
   const TEAR_DIST = 55;
@@ -182,8 +182,8 @@ if (aboutCanvas) {
   function initCloth() {
     const W = aboutCanvas.width, H = aboutCanvas.height;
     const spacingX = W / (COLS - 1);
-    const spacingY = (H * 0.52) / (ROWS - 1);
-    const startY   = 18;
+    const spacingY = (H * 0.97) / (ROWS - 1);
+    const startY   = 14;
     points = []; constraints = [];
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
@@ -406,25 +406,43 @@ if (aboutCanvas) {
     ctx.fillStyle = '#8A8A8A';
     ctx.font = `${Math.round(Math.min(W,H)*0.033)}px 'DM Sans', sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillText('drag to tear', W/2, H*0.76);
+    ctx.fillText('drag to tear', W/2, H*0.5);
     ctx.globalAlpha = 1;
   }
+
+  // Load the reveal image (shown under cloth as it tears)
+  const revealImg = new Image();
+  revealImg.src = 'assets/images/chair-placeholder.jpg';
 
   let t2 = 0;
   function aboutLoop() {
     requestAnimationFrame(aboutLoop);
     const W = aboutCanvas.width, H = aboutCanvas.height;
     updateCloth();
-    // Paper background
-    ctx2.fillStyle = '#FDFAF4'; ctx2.fillRect(0,0,W,H);
-    // Grid on paper
-    ctx2.globalAlpha = 0.04; ctx2.strokeStyle = '#5C3D2E'; ctx2.lineWidth = 1;
-    for (let x=0;x<W;x+=30){ctx2.beginPath();ctx2.moveTo(x,0);ctx2.lineTo(x,H);ctx2.stroke();}
-    for (let y=0;y<H;y+=30){ctx2.beginPath();ctx2.moveTo(0,y);ctx2.lineTo(W,y);ctx2.stroke();}
-    ctx2.globalAlpha = 1;
-    // Chair behind cloth
-    drawChair(ctx2, W, H);
-    // Cloth on top
+
+    // ── Background: image (or warm fallback) ──
+    ctx2.fillStyle = '#2C2C2C';
+    ctx2.fillRect(0, 0, W, H);
+    if (revealImg.complete && revealImg.naturalWidth > 0) {
+      // Cover-fit the image
+      const iw = revealImg.naturalWidth, ih = revealImg.naturalHeight;
+      const scale = Math.max(W / iw, H / ih);
+      const dw = iw * scale, dh = ih * scale;
+      const dx = (W - dw) / 2, dy = (H - dh) / 2;
+      ctx2.globalAlpha = 1;
+      ctx2.drawImage(revealImg, dx, dy, dw, dh);
+      // Subtle dark vignette so tears read clearly
+      const vig = ctx2.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.85);
+      vig.addColorStop(0, 'rgba(0,0,0,0)');
+      vig.addColorStop(1, 'rgba(0,0,0,0.45)');
+      ctx2.fillStyle = vig;
+      ctx2.fillRect(0, 0, W, H);
+    } else {
+      // Fallback: draw vector chair while image loads
+      drawChair(ctx2, W, H);
+    }
+
+    // ── Cloth on top ──
     drawCloth(ctx2, W);
     drawHint(ctx2, W, H, t2);
     t2++;
