@@ -40,6 +40,7 @@ const heroCanvas = document.getElementById('hero-canvas');
 if (heroCanvas) {
   const ctx = heroCanvas.getContext('2d');
   let W, H;
+  let chairTargets = []; // hoisted — must exist before resize() runs
 
   function resize() {
     W = heroCanvas.width  = window.innerWidth;
@@ -105,7 +106,6 @@ if (heroCanvas) {
     return pts;
   }
 
-  let chairTargets = [];
   function buildChairTargets() {
     const scale = Math.min(W, H) / 260;
     const cx = W * 0.65;  // right-of-centre so it doesn't cover title
