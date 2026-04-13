@@ -68,6 +68,22 @@
     return PALETTES[paletteIndex++ % PALETTES.length];
   }
 
+  // ── Grain texture — rendered once per size, reused via drawImage ──
+  const _grainCache = new Map(); // key: 'WxH:density' → offscreen canvas
+  function getGrain(W, H, count) {
+    const key = W + 'x' + H + ':' + count;
+    if (_grainCache.has(key)) return _grainCache.get(key);
+    const off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    const octx = off.getContext('2d');
+    for (let i = 0; i < count; i++) {
+      octx.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.025) + ')';
+      octx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+    }
+    _grainCache.set(key, off);
+    return off;
+  }
+
   // ── Draw a find/art placeholder canvas ──────
   function drawPlaceholder(canvas, colors) {
     const parent = canvas.parentElement;
@@ -97,11 +113,8 @@
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // Grain texture
-    for (let i = 0; i < 3500; i++) {
-      ctx.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.025) + ')';
-      ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
-    }
+    // Grain texture — cached offscreen canvas, no per-call allocation
+    ctx.drawImage(getGrain(W, H, 3500), 0, 0);
   }
 
   // ── Draw featured find canvas ───────────────
@@ -130,10 +143,7 @@
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    for (let i = 0; i < 5000; i++) {
-      ctx.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.018) + ')';
-      ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
-    }
+    ctx.drawImage(getGrain(W, H, 5000), 0, 0);
   }
 
   // ── Draw art card canvas (painterly) ────────
@@ -158,9 +168,10 @@
     });
 
     // Painterly brush strokes
+    const _brushColors = ['#fff', '#000', colors[1]]; // hoisted — no array literal in loop
     ctx.globalAlpha = 0.07;
     for (let i = 0; i < 60; i++) {
-      ctx.strokeStyle = ['#fff', '#000', colors[1]][i % 3];
+      ctx.strokeStyle = _brushColors[i % 3];
       ctx.lineWidth   = Math.random() * 10 + 2;
       ctx.lineCap     = 'round';
       ctx.beginPath();
