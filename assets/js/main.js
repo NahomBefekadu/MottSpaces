@@ -139,7 +139,7 @@ function shapeOttoman(add) {
 function shapeSofa(add) {
   for (let x=-110;x<=110;x+=7) { add(x,-90); add(x,-130); add(x,-190); }
   for (let y=-190;y<=-90;y+=7) { add(-110,y); add(110,y); }
-  for (let y=-90;y>=-175;y+=10) { add(-118,y); add(118,y); }
+  for (let y=-90;y>=-175;y-=10) { add(-118,y); add(118,y); }
 }
 
 const SHAPES = [shapeTulip, shapeLadder, shapeTable, shapeOttoman, shapeSofa];
@@ -400,8 +400,13 @@ function updateCloth() {
 }
 
 // Images
-const revealImg  = new Image(); revealImg.src  = 'assets/images/chair-placeholder.jpg';
-const clothImg   = new Image(); clothImg.src   = 'assets/images/cloth-painting.jpg';
+// Resolve image paths relative to the JS file location, works from any subpage
+const _jsBase = document.querySelector('script[src*="main.js"]')?.src
+  ? new URL(document.querySelector('script[src*="main.js"]').src).href.replace(/\/[^\/]+$/, '/')
+  : document.location.origin + '/';
+const _imgBase = _jsBase.replace('/assets/js/', '/assets/images/');
+const revealImg = new Image(); revealImg.src = _imgBase + 'chair-placeholder.jpg';
+const clothImg  = new Image(); clothImg.src  = _imgBase + 'cloth-painting.jpg';
 const clothSampler = document.createElement('canvas');
 let clothSamplerReady = false;
 
