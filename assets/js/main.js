@@ -1,6 +1,6 @@
 /* ============================================
    MOTT SPACES — Creative JS
-   Effects inspired by #creative-coding channel
+   Particle and canvas effects
    ============================================ */
 
 // ── 1. CUSTOM CURSOR ────────────────────────
@@ -35,61 +35,200 @@ window.addEventListener('scroll', () => {
   nav.classList.toggle('scrolled', window.scrollY > 60);
 });
 
-// ── 3. HERO CANVAS — Organic Particle Field ─
-// Inspired by Dan Porter's particle experiments in #creative-coding
+// ── 3. HERO CANVAS — Particles that form a chair ───────────────────────
 const heroCanvas = document.getElementById('hero-canvas');
 if (heroCanvas) {
   const ctx = heroCanvas.getContext('2d');
-  let W, H, particles = [], animId;
+  let W, H;
 
   function resize() {
     W = heroCanvas.width  = window.innerWidth;
     H = heroCanvas.height = window.innerHeight;
+    buildChairTargets();
   }
   resize();
   window.addEventListener('resize', resize);
 
   const PALETTE = ['#C4622D','#D4A843','#7A8C6E','#5C3D2E','#8A8A8A'];
 
+  // ── Chair silhouette target points ──
+  // Sampled from a tulip/shell chair outline
+  // Returns array of {x,y} normalised 0-1, scaled to canvas at runtime
+  function getChairShape(cx, cy, scale) {
+    const pts = [];
+    function p(x, y) { pts.push({ x: cx + x * scale, y: cy + y * scale }); }
+
+    // Base disc
+    for (let a = 0; a < Math.PI * 2; a += 0.28)
+      p(Math.cos(a) * 48, Math.sin(a) * 9);
+
+    // Pedestal column (sample points along bezier)
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12;
+      const bx = 0 * (1-t)**2 + 0 * 2*t*(1-t) + 0 * t**2;
+      const by = -8 * (1-t)**2 + -55 * 2*t*(1-t) + -108 * t**2;
+      p(bx, by);
+    }
+
+    // Seat bowl ellipse
+    for (let a = 0; a < Math.PI * 2; a += 0.22)
+      p(Math.cos(a) * 62, -122 + Math.sin(a) * 24);
+
+    // Inner seat
+    for (let a = 0; a < Math.PI * 2; a += 0.35)
+      p(Math.cos(a) * 42, -126 + Math.sin(a) * 14);
+
+    // Back shell left curve
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14;
+      // cubic bezier: (-60,-116) -> (-72,-155) -> (-52,-228) -> (0,-240)
+      const bx = (-60)*(1-t)**3 + (-72)*3*t*(1-t)**2 + (-52)*3*t**2*(1-t) + (0)*t**3;
+      const by = (-116)*(1-t)**3 + (-155)*3*t*(1-t)**2 + (-228)*3*t**2*(1-t) + (-240)*t**3;
+      p(bx, by);
+    }
+    // Back shell right curve
+    for (let i = 0; i <= 14; i++) {
+      const t = i / 14;
+      const bx = (60)*(1-t)**3 + (72)*3*t*(1-t)**2 + (52)*3*t**2*(1-t) + (0)*t**3;
+      const by = (-116)*(1-t)**3 + (-155)*3*t*(1-t)**2 + (-228)*3*t**2*(1-t) + (-240)*t**3;
+      p(bx, by);
+    }
+
+    // Inner back highlight
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      const bx = (-38)*(1-t)**3 + (-46)*3*t*(1-t)**2 + (-30)*3*t**2*(1-t) + (0)*t**3;
+      const by = (-120)*(1-t)**3 + (-162)*3*t*(1-t)**2 + (-220)*3*t**2*(1-t) + (-232)*t**3;
+      p(bx, by);
+    }
+
+    return pts;
+  }
+
+  let chairTargets = [];
+  function buildChairTargets() {
+    const scale = Math.min(W, H) / 260;
+    const cx = W * 0.65;  // right-of-centre so it doesn't cover title
+    const cy = H * 0.72;
+    chairTargets = getChairShape(cx, cy, scale);
+  }
+
+  // ── Formation state machine ──
+  // States: 'wander' -> 'forming' -> 'hold' -> 'dissolving' -> 'wander'
+  const WANDER_DUR   = 480;  // frames between formations (~8s at 60fps)
+  const FORM_DUR     = 80;   // frames to lerp into position
+  const HOLD_DUR     = 140;  // frames to hold the shape
+  const DISSOLVE_DUR = 60;   // frames to release
+  let formState = 'wander';
+  let formTimer = WANDER_DUR; // start with a wait
+
+  // ── Particle class ──
   class Particle {
-    constructor() { this.reset(); }
-    reset() {
-      this.x  = Math.random() * W;
-      this.y  = Math.random() * H;
-      this.r  = Math.random() * 1.8 + 0.4;
-      this.vx = (Math.random() - 0.5) * 0.35;
-      this.vy = (Math.random() - 0.5) * 0.35;
-      this.alpha = Math.random() * 0.5 + 0.1;
+    constructor(i) {
+      this.i = i;
+      this.wander();
+      // Scatter randomly at boot
+      this.x  = Math.random() * (W || 1200);
+      this.y  = Math.random() * (H || 800);
+    }
+
+    wander() {
+      this.tx  = null; this.ty = null;  // no target
+      this.r   = Math.random() * 1.8 + 0.4;
+      this.baseAlpha = Math.random() * 0.45 + 0.1;
       this.color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
-      this.noiseOffset = Math.random() * 1000;
       this.life = 0;
       this.maxLife = Math.random() * 400 + 200;
+      if (!this.x) { this.x = Math.random() * (W||1200); this.y = Math.random() * (H||800); }
+      this.vx = (Math.random() - 0.5) * 0.35;
+      this.vy = (Math.random() - 0.5) * 0.35;
     }
-    update(t) {
-      // Gentle Perlin-like steering using sin/cos waves
-      const angle = Math.sin(this.x * 0.003 + t * 0.0003) *
-                    Math.cos(this.y * 0.003 + t * 0.0002) * Math.PI * 2;
-      this.vx += Math.cos(angle) * 0.012;
-      this.vy += Math.sin(angle) * 0.012;
-      // dampen
-      this.vx *= 0.98; this.vy *= 0.98;
-      this.x += this.vx; this.y += this.vy;
-      this.life++;
-      if (this.life > this.maxLife) this.reset();
+
+    setTarget(tx, ty) {
+      this.tx = tx; this.ty = ty;
+      this.color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      this.r = Math.random() * 1.4 + 0.6;
+      this.baseAlpha = Math.random() * 0.5 + 0.4;
     }
-    draw() {
+
+    update(t, state, progress) {
+      if (state === 'wander' || state === 'dissolving') {
+        // Flow-field steering
+        const angle = Math.sin(this.x * 0.003 + t * 0.0003) *
+                      Math.cos(this.y * 0.003 + t * 0.0002) * Math.PI * 2;
+        this.vx += Math.cos(angle) * 0.012;
+        this.vy += Math.sin(angle) * 0.012;
+        this.vx *= 0.98; this.vy *= 0.98;
+        this.x += this.vx; this.y += this.vy;
+        this.life++;
+        if (this.life > this.maxLife) this.wander();
+      } else if ((state === 'forming' || state === 'hold') && this.tx !== null) {
+        // Lerp toward target
+        const speed = state === 'forming' ? 0.045 + progress * 0.04 : 0.08;
+        this.x += (this.tx - this.x) * speed;
+        this.y += (this.ty - this.y) * speed;
+        this.vx = 0; this.vy = 0;
+      } else {
+        // No target — keep wandering
+        const angle = Math.sin(this.x * 0.003 + t * 0.0003) *
+                      Math.cos(this.y * 0.003 + t * 0.0002) * Math.PI * 2;
+        this.vx += Math.cos(angle) * 0.012;
+        this.vy += Math.sin(angle) * 0.012;
+        this.vx *= 0.98; this.vy *= 0.98;
+        this.x += this.vx; this.y += this.vy;
+      }
+    }
+
+    draw(state, progress) {
+      let alpha = this.baseAlpha;
+      let r = this.r;
+
+      if (state === 'forming') {
+        alpha = this.baseAlpha * (0.4 + progress * 0.6);
+        r = this.r * (0.6 + progress * 0.5);
+      } else if (state === 'hold') {
+        // Gentle pulse
+        r = this.r * (1 + Math.sin(Date.now() * 0.003 + this.i * 0.4) * 0.12);
+      } else if (state === 'dissolving') {
+        alpha = this.baseAlpha * (1 - progress);
+        r = this.r * (1 + progress * 0.5);
+      }
+
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.arc(this.x, this.y, Math.max(0.1, r), 0, Math.PI * 2);
       ctx.fillStyle = this.color;
-      ctx.globalAlpha = this.alpha * (1 - this.life / this.maxLife);
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
       ctx.fill();
     }
   }
 
-  // Build particle pool
-  for (let i = 0; i < 280; i++) particles.push(new Particle());
+  // Build pool — extra particles for chair density
+  const particles = [];
+  for (let i = 0; i < 320; i++) particles.push(new Particle(i));
 
-  // Faint grid lines (mid-century graph feel)
+  // Assign targets from chairTargets array to a subset of particles
+  function assignTargets() {
+    buildChairTargets();
+    const tgts = [...chairTargets];
+    // Shuffle targets
+    for (let i = tgts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tgts[i], tgts[j]] = [tgts[j], tgts[i]];
+    }
+    particles.forEach((p, i) => {
+      if (i < tgts.length) {
+        p.setTarget(tgts[i].x, tgts[i].y);
+      } else {
+        p.tx = null; p.ty = null;
+      }
+    });
+  }
+
+  function releaseTargets() {
+    particles.forEach(p => { p.tx = null; p.ty = null; p.wander(); });
+  }
+
+  // ── Faint grid ──
   function drawGrid(t) {
     ctx.globalAlpha = 0.03;
     ctx.strokeStyle = '#5C3D2E';
@@ -104,16 +243,17 @@ if (heroCanvas) {
     }
   }
 
-  // Connection lines between nearby particles
-  function drawConnections() {
-    const DIST = 90;
+  // ── Connection lines ──
+  function drawConnections(state) {
+    const DIST = state === 'hold' ? 28 : 90;
+    const alpha = state === 'hold' ? 0.18 : 0.07;
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
         const dy = particles[i].y - particles[j].y;
-        const d = Math.sqrt(dx * dx + dy * dy);
+        const d  = Math.sqrt(dx*dx + dy*dy);
         if (d < DIST) {
-          ctx.globalAlpha = (1 - d / DIST) * 0.08;
+          ctx.globalAlpha = (1 - d / DIST) * alpha;
           ctx.strokeStyle = '#C4622D';
           ctx.lineWidth = 0.5;
           ctx.beginPath();
@@ -125,11 +265,48 @@ if (heroCanvas) {
     }
   }
 
+  // ── Ghost chair outline drawn at hold peak ──
+  function drawGhostChair(alpha) {
+    if (alpha <= 0) return;
+    const scale = Math.min(W, H) / 260;
+    const cx = W * 0.65, cy = H * 0.72;
+    function pt(x, y) { return [cx + x*scale, cy + y*scale]; }
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.22;
+    ctx.strokeStyle = '#C4622D';
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    // Base
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 48*scale, 9*scale, 0, 0, Math.PI*2);
+    ctx.stroke();
+    // Column
+    ctx.beginPath();
+    ctx.moveTo(...pt(0,-5));
+    ctx.bezierCurveTo(...pt(-4,-55), ...pt(-6,-95), ...pt(0,-108));
+    ctx.stroke();
+    // Seat
+    ctx.beginPath();
+    ctx.ellipse(cx, cy-122*scale, 62*scale, 24*scale, -0.08, 0, Math.PI*2);
+    ctx.stroke();
+    // Back
+    ctx.beginPath();
+    ctx.moveTo(...pt(-60,-116));
+    ctx.bezierCurveTo(...pt(-72,-155), ...pt(-52,-228), ...pt(0,-240));
+    ctx.bezierCurveTo(...pt(52,-228), ...pt(72,-155), ...pt(60,-116));
+    ctx.stroke();
+    ctx.restore();
+  }
+
   let t = 0;
+  let ghostAlpha = 0;
+
   function heroLoop() {
-    animId = requestAnimationFrame(heroLoop);
+    requestAnimationFrame(heroLoop);
     ctx.clearRect(0, 0, W, H);
-    // Warm gradient base
+
+    // Background gradient
     const grad = ctx.createLinearGradient(0, 0, W, H);
     grad.addColorStop(0, '#F5F0E8');
     grad.addColorStop(0.5, '#EDE5D4');
@@ -139,24 +316,61 @@ if (heroCanvas) {
     ctx.fillRect(0, 0, W, H);
 
     drawGrid(t);
-    drawConnections();
+
+    // ── State machine tick ──
+    formTimer--;
+    let progress = 0;
+
+    if (formState === 'wander' && formTimer <= 0) {
+      formState = 'forming';
+      formTimer = FORM_DUR;
+      assignTargets();
+    } else if (formState === 'forming') {
+      progress = 1 - formTimer / FORM_DUR;
+      if (formTimer <= 0) { formState = 'hold'; formTimer = HOLD_DUR; }
+    } else if (formState === 'hold') {
+      progress = 1;
+      ghostAlpha = Math.min(1, ghostAlpha + 0.04);
+      if (formTimer <= 0) { formState = 'dissolving'; formTimer = DISSOLVE_DUR; ghostAlpha = 0; releaseTargets(); }
+    } else if (formState === 'dissolving') {
+      progress = formTimer / DISSOLVE_DUR;
+      ghostAlpha = Math.max(0, ghostAlpha - 0.05);
+      if (formTimer <= 0) { formState = 'wander'; formTimer = WANDER_DUR; }
+    }
+
+    // Draw connections (tighter during hold)
+    drawConnections(formState);
+
     ctx.globalAlpha = 1;
-    particles.forEach(p => { p.update(t); p.draw(); });
+    particles.forEach(p => {
+      p.update(t, formState, progress);
+      p.draw(formState, progress);
+    });
+
+    // Ghost outline fades in during hold
+    drawGhostChair(ghostAlpha);
+
     ctx.globalAlpha = 1;
     t++;
   }
   heroLoop();
 
-  // Parallax on mouse move
-  let heroMX = 0, heroMY = 0;
   window.addEventListener('mousemove', e => {
-    heroMX = (e.clientX / W - 0.5) * 30;
-    heroMY = (e.clientY / H - 0.5) * 30;
+    // Gentle mouse repulsion during wander
+    if (formState !== 'wander') return;
+    particles.forEach(p => {
+      const dx = p.x - e.clientX, dy = p.y - e.clientY;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 80) {
+        p.vx += (dx / d) * 0.8;
+        p.vy += (dy / d) * 0.8;
+      }
+    });
   });
 }
 
 // ── 4. ABOUT CANVAS — Tearable Easel with MCM Chair ─────────────────────────
-// Inspired by tearable.website & html-in-canvas from #creative-coding
+// Cloth physics: verlet integration, tearable canvas
 // Cloth physics: verlet integration on a grid of points
 // Drawing: vector line-art of a mid-century tulip/shell chair
 
@@ -501,7 +715,7 @@ if (aboutCanvas) {
 }
 
 // ── 5. JOURNAL CANVAS THUMBNAILS ────────────
-// Inspired by color field experiments from #creative-coding
+// Color field palette canvas utilities
 function makePaletteCanvas(canvasEl, palette, style) {
   if (!canvasEl) return;
   const ctx = canvasEl.getContext('2d');
