@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mott Spaces — Interior Design &amp; Living</title>
+  <meta name="description" content="Mott Spaces — A curated interior design portfolio and journal exploring mid-century modern living, space, and craft." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    /* Reveal animation */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
+                  transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.35s; }
+
+    /* Project placeholder canvas styling */
+    .project-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--light-gray);
+    }
+    .project-card canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-ring"></div>
+
+  <!-- ── NAV ───────────────────────────────── -->
+  <nav>
+    <a href="/" class="nav-logo">Mott<span>.</span>Spaces</a>
+    <ul class="nav-links">
+      <li><a href="#projects">Work</a></li>
+      <li><a href="#journal">Journal</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HERO ──────────────────────────────── -->
+  <section id="hero">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero-content">
+      <p class="hero-eyebrow reveal">Interior Design &amp; Spatial Thinking</p>
+      <h1 class="hero-title reveal reveal-delay-1">
+        Space is<br><em>feeling</em>,<br>not square footage.
+      </h1>
+      <p class="hero-sub reveal reveal-delay-2">
+        A portfolio of interiors, objects, and findings rooted in
+        mid-century sensibility — where function meets warmth.
+      </p>
+      <a href="#projects" class="hero-cta reveal reveal-delay-3">
+        View the work
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+          <path d="M1 5h12M8 1l5 4-5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hero-scroll">Scroll</div>
+  </section>
+
+  <!-- ── MARQUEE ───────────────────────────── -->
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Mid-Century Modern</span><span class="dot">·</span>
+      <span>Spatial Design</span><span class="dot">·</span>
+      <span>Material Craft</span><span class="dot">·</span>
+      <span>Form &amp; Function</span><span class="dot">·</span>
+      <span>Living Well</span><span class="dot">·</span>
+      <span>Organic Forms</span><span class="dot">·</span>
+      <span>Considered Interiors</span><span class="dot">·</span>
+    </div>
+  </div>
+
+  <!-- ── PROJECTS ──────────────────────────── -->
+  <section id="projects">
+    <div class="projects-header">
+      <div>
+        <span class="section-label reveal">Selected Work</span>
+        <h2 class="section-title reveal reveal-delay-1">Recent <em>Projects</em></h2>
+      </div>
+      <a href="projects/index.html" class="view-all reveal reveal-delay-2">View all work →</a>
+    </div>
+
+    <div class="projects-grid">
+      <!-- Card 1 — large left -->
+      <div class="project-card reveal">
+        <canvas id="pc1" class="project-placeholder"></canvas>
+        <div class="project-card-overlay">
+          <h3>The Walnut Study</h3>
+          <span>Residential · 2024</span>
+        </div>
+      </div>
+      <!-- Card 2 — tall right -->
+      <div class="project-card reveal reveal-delay-1">
+        <canvas id="pc2" class="project-placeholder"></canvas>
+        <div class="project-card-overlay">
+          <h3>Terracotta Loft</h3>
+          <span>Residential · 2024</span>
+        </div>
+      </div>
+      <!-- Card 3 — short left -->
+      <div class="project-card reveal reveal-delay-2">
+        <canvas id="pc3" class="project-placeholder"></canvas>
+        <div class="project-card-overlay">
+          <h3>Oak &amp; Linen Suite</h3>
+          <span>Hospitality · 2023</span>
+        </div>
+      </div>
+      <!-- Card 4 — wide right -->
+      <div class="project-card reveal reveal-delay-3">
+        <canvas id="pc4" class="project-placeholder"></canvas>
+        <div class="project-card-overlay">
+          <h3>Sage House</h3>
+          <span>Residential · 2023</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT ──────────────────────────────── -->
+  <section id="about">
+    <div>
+      <span class="section-label reveal">About</span>
+      <h2 class="section-title reveal reveal-delay-1">Designing<br><em>with intention.</em></h2>
+      <p class="reveal reveal-delay-2">
+        Mott Spaces is a design practice rooted in the belief that a well-considered room
+        changes how you move through a day. We draw from mid-century modernism —
+        its optimism, its material honesty, its refusal to choose between beauty and use.
+      </p>
+      <p class="reveal reveal-delay-3">
+        Each project begins with listening: to the light, the inhabitant, the bones of
+        the space. What emerges is always distinctly theirs.
+      </p>
+    </div>
+    <div class="about-canvas-wrap reveal reveal-delay-2">
+      <canvas id="about-canvas"></canvas>
+    </div>
+  </section>
+
+  <!-- ── JOURNAL ────────────────────────────── -->
+  <section id="journal">
+    <span class="section-label reveal">Journal</span>
+    <h2 class="section-title reveal reveal-delay-1">Findings &amp; <em>Field Notes</em></h2>
+
+    <div class="journal-grid">
+      <!-- Post 1 -->
+      <a href="journal/post-1.html" class="journal-card reveal">
+        <div class="journal-card-img">
+          <canvas id="jc1"></canvas>
+        </div>
+        <div class="journal-card-meta">
+          <span class="tag">Materials</span>
+          <span>Apr 10, 2026</span>
+        </div>
+        <h3>Why Walnut Beats Oak in Every Low-Light Room</h3>
+        <p>A meditation on grain, tone, and how warm woods change as the sun moves west through a window.</p>
+      </a>
+
+      <!-- Post 2 -->
+      <a href="journal/post-2.html" class="journal-card reveal reveal-delay-1">
+        <div class="journal-card-img">
+          <canvas id="jc2"></canvas>
+        </div>
+        <div class="journal-card-meta">
+          <span class="tag">Color</span>
+          <span>Mar 28, 2026</span>
+        </div>
+        <h3>The Return of Terracotta: Beyond the Trend</h3>
+        <p>Earth tones were never a trend — they were always just forgotten. On the permanence of clay and ochre.</p>
+      </a>
+
+      <!-- Post 3 -->
+      <a href="journal/post-3.html" class="journal-card reveal reveal-delay-2">
+        <div class="journal-card-img">
+          <canvas id="jc3"></canvas>
+        </div>
+        <div class="journal-card-meta">
+          <span class="tag">History</span>
+          <span>Mar 14, 2026</span>
+        </div>
+        <h3>Eames, Knoll, and the Chair as Philosophy</h3>
+        <p>What a piece of furniture from 1956 still teaches us about thinking through making.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ────────────────────────────── -->
+  <section id="contact">
+    <div>
+      <span class="section-label reveal">Contact</span>
+      <h2 class="section-title reveal reveal-delay-1">Let's make<br><em>something.</em></h2>
+      <div class="contact-detail reveal reveal-delay-2">
+        <label>Email</label>
+        <a href="mailto:hello@mottspaces.com">hello@mottspaces.com</a>
+      </div>
+      <div class="contact-detail reveal reveal-delay-3">
+        <label>Based in</label>
+        <p>Toronto, ON — Available Worldwide</p>
+      </div>
+      <div class="contact-detail reveal">
+        <label>Instagram</label>
+        <a href="#">@mott.spaces</a>
+      </div>
+    </div>
+
+    <form class="contact-form reveal reveal-delay-1" onsubmit="return false">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" placeholder="Your name" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="your@email.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" placeholder="Tell me about your space..."></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Send Message</button>
+    </form>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────── -->
+  <footer>
+    <span class="logo">Mott<span>.</span>Spaces</span>
+    <ul class="footer-links">
+      <li><a href="#projects">Work</a></li>
+      <li><a href="#journal">Journal</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p>© 2026 Mott Spaces. All rights reserved.</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    // ── Project placeholder canvases (MCM color blocking) ──
+    function drawProjectCard(id, colors, shape) {
+      const c = document.getElementById(id);
+      if (!c) return;
+      const ctx = c.getContext('2d');
+      // Match parent size
+      const parent = c.parentElement;
+      c.width  = parent.offsetWidth  || 600;
+      c.height = parent.offsetHeight || 450;
+      const W = c.width, H = c.height;
+
+      // Background
+      ctx.fillStyle = colors[0];
+      ctx.fillRect(0, 0, W, H);
+
+      if (shape === 'block') {
+        ctx.fillStyle = colors[1];
+        ctx.fillRect(0, H * 0.55, W, H * 0.45);
+        ctx.fillStyle = colors[2];
+        ctx.fillRect(W * 0.62, 0, W * 0.38, H * 0.55);
+      } else if (shape === 'diagonal') {
+        ctx.fillStyle = colors[1];
+        ctx.beginPath();
+        ctx.moveTo(0, H * 0.4); ctx.lineTo(W, H * 0.15);
+        ctx.lineTo(W, H); ctx.lineTo(0, H);
+        ctx.fill();
+        ctx.fillStyle = colors[2];
+        ctx.beginPath();
+        ctx.arc(W * 0.72, H * 0.28, W * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (shape === 'circle') {
+        ctx.fillStyle = colors[1];
+        ctx.beginPath();
+        ctx.arc(W * 0.35, H * 0.5, W * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = colors[2];
+        ctx.fillRect(W * 0.58, H * 0.1, W * 0.42, H * 0.35);
+      } else if (shape === 'stripes') {
+        const stripes = [colors[1], colors[0], colors[2], colors[0], colors[1]];
+        stripes.forEach((col, i) => {
+          ctx.fillStyle = col;
+          ctx.fillRect(0, i * (H / stripes.length), W, H / stripes.length + 1);
+        });
+      }
+
+      // Noise texture
+      for (let i = 0; i < 4000; i++) {
+        ctx.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.03) + ')';
+        ctx.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      drawProjectCard('pc1', ['#EDE5D4','#C4622D','#5C3D2E'], 'block');
+      drawProjectCard('pc2', ['#5C3D2E','#D4A843','#F5F0E8'], 'diagonal');
+      drawProjectCard('pc3', ['#7A8C6E','#F5F0E8','#C4622D'], 'circle');
+      drawProjectCard('pc4', ['#2C2C2C','#C4622D','#D4A843'], 'stripes');
+    });
+  </script>
+
+</body>
+</html>
