@@ -298,29 +298,50 @@ if (heroCanvas) {
     }
   }
 
-  // ── Connection lines — only during 'hold', sampled subset only ──
+  // ── Connection lines — spatial grid, O(n) not O(n²) ──
+  // Divide canvas into cells, each particle only checks its own cell + 8 neighbours
+  const CONN_DIST = 32;
+  const CELL_SIZE = CONN_DIST; // cell = connection radius → each cell has ~constant particles
+
   function drawConnections(state) {
-    if (state !== 'hold') return; // skip entirely during wander = huge saving
-    const DIST  = 32;
-    const alpha = 0.15;
-    // Only check every other particle to halve iterations
+    if (state !== 'hold') return;
+
+    // Build spatial grid: Map<cellKey, particle[]>
+    const grid = new Map();
+    const cellKey = (cx, cy) => (cx << 16) | (cy & 0xFFFF); // fast int key
+    particles.forEach(p => {
+      const cx = Math.floor(p.x / CELL_SIZE);
+      const cy = Math.floor(p.y / CELL_SIZE);
+      const k  = cellKey(cx, cy);
+      if (!grid.has(k)) grid.set(k, []);
+      grid.get(k).push(p);
+    });
+
     ctx.strokeStyle = '#C4622D';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < particles.length; i += 2) {
-      for (let j = i + 1; j < particles.length; j += 2) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        if (Math.abs(dx) > DIST || Math.abs(dy) > DIST) continue; // cheap bbox reject
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < DIST) {
-          ctx.globalAlpha = (1 - d / DIST) * alpha;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.stroke();
-        }
-      }
-    }
+    ctx.lineWidth   = 0.5;
+
+    // For each particle, check only its cell + 4 adjacent (avoid double-drawing)
+    particles.forEach(p => {
+      const cx = Math.floor(p.x / CELL_SIZE);
+      const cy = Math.floor(p.y / CELL_SIZE);
+      // Check right, down, down-right, down-left — covers all pairs once
+      [[0,0],[1,0],[0,1],[1,1],[-1,1]].forEach(([dx, dy]) => {
+        const neighbours = grid.get(cellKey(cx+dx, cy+dy));
+        if (!neighbours) return;
+        neighbours.forEach(q => {
+          if (q === p) return;
+          const ddx = p.x - q.x, ddy = p.y - q.y;
+          const d = Math.sqrt(ddx*ddx + ddy*ddy);
+          if (d < CONN_DIST && d > 0) {
+            ctx.globalAlpha = (1 - d / CONN_DIST) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        });
+      });
+    });
   }
 
   // ── Ghost outline — draws current chairTargets as faint dots ──
